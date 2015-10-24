@@ -26,9 +26,9 @@
 
 def do_turn (state):
     [tank_coords, hp, ammo, [x_pos, y_pos], aggressors] = state
-	x_vel = 0 # movement direction
-	y_vel = 0
-	tx    = 0 # turret direction
-	ty    = 0
-	shoot = False
-    return [[x_vel, y_vel]], shoot, [tx, ty]]
+    x_vel = 0 # movement direction
+    y_vel = 0
+    tx    = 0 # turret direction
+    ty    = 0
+    shoot = False
+    return [[x_vel, y_vel], shoot, [tx, ty]]
