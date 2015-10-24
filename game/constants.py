@@ -15,7 +15,7 @@ BULLET          = 13
 AMMO            = 14
 EYE             = 15
 
-MAX_TANK_SPEED  = 4    # <-- pixels/second
+MAX_TANK_SPEED  = 1    # <-- pixels/second
 MAX_TANK_RADIUS = 2    # <-- cornerlength IF WE GET WEIRD BUGS CHECK THIS
 MAX_TANK_HP     = 30
 BULLET_DM       = 1
