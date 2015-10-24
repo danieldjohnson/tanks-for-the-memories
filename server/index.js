@@ -19,7 +19,7 @@ var user_mapping = {};
 passport.use(new GoogleStrategy({
     clientID: credentials.GOOGLE_CONSUMER_KEY,
     clientSecret: credentials.GOOGLE_CONSUMER_SECRET,
-    callbackURL: 'http://localhost:3000/auth/google/return',
+    callbackURL: 'http://79b7adfb.ngrok.io:3000/auth/google/return',
     },
     function(accessToken, refreshToken, profile, done) {
         console.log(profile);
