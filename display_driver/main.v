@@ -86,7 +86,6 @@ always @(posedge sclk or negedge rst) begin: MAIN_RS_RX
         if (spi_idx_minor >= 47) begin
             img[spi_idx_major] <= {mosi, spibuf[46:0]};
             spi_idx_major <= spi_idx_major + 1;
-            //spi_idx_major <= spi_idx_major1+1;
             spi_idx_minor <= 0;
         end else begin
             spibuf[spi_idx_minor] <= mosi;
@@ -98,7 +97,7 @@ end
 
 always @(posedge inclk) begin: MAIN_DIVIDER_DIVIDE
     reg [22-1:0] count;
-    if ((count < (80 - 1))) begin
+    if ((count < (1 - 1))) begin
         count <= (count + 1);
     end
     else begin
@@ -107,65 +106,83 @@ always @(posedge inclk) begin: MAIN_DIVIDER_DIVIDE
     end
 end
 
-always @(posedge clk) begin: MAIN_D_DISP
-    R1 <= nextColors[ 7];
-    G1 <= nextColors[15];
-    B1 <= nextColors[23];
-    R2 <= nextColors[31];
-    G2 <= nextColors[39];
-    B2 <= nextColors[47]; 
-//    R1 <= nextColors[ 7: 0] > d_pwm_ctr;
-//    G1 <= nextColors[15: 8] > d_pwm_ctr;
-//    B1 <= nextColors[23:16] > d_pwm_ctr;
-//    R2 <= nextColors[31:24] > d_pwm_ctr;
-//    G2 <= nextColors[39:32] > d_pwm_ctr;
-//    B2 <= nextColors[47:40] > d_pwm_ctr;
-    nextColors <= img[d_next_row * 64 + d_next_col];
+always @(posedge clk or negedge rst) begin: MAIN_D_DISP
+  if (rst == 0) begin
+    d_next_row <= 0;
+	 d_next_col <= 0;
+	 d_which_row <= 0;
+	 d_which_col <= 0;
+  end else begin
+//    R1 <= nextColors[ 7];
+//    G1 <= nextColors[15];
+//    B1 <= nextColors[23];
+//    R2 <= nextColors[31];
+//    G2 <= nextColors[39];
+//    B2 <= nextColors[47]; 
+    R1 <= nextColors[ 7: 0] > d_pwm_ctr;
+    G1 <= nextColors[15: 8] > d_pwm_ctr;
+    B1 <= nextColors[23:16] > d_pwm_ctr;
+    R2 <= nextColors[31:24] > d_pwm_ctr;
+    G2 <= nextColors[39:32] > d_pwm_ctr;
+    B2 <= nextColors[47:40] > d_pwm_ctr;
+
+    nextColors <= img[(d_next_row+1) * 64 + d_next_col];
     A <= d_which_row[0];
     B <= d_which_row[1];
     C <= d_which_row[2];
     D <= d_which_row[3];
 
-    if (d_which_col == 63) begin
-        d_which_col <= 0;
-        d_do_latch <= 1'b1;
+    latch <= d_which_col == 63;
+//    if (d_which_col == 63) begin
+//        d_which_col <= 0;
+//        //d_do_latch <= 1'b1;
+//
+//        if ((d_which_row == ((32 / 2) - 1))) begin
+//            //d_cur_img <= img;
+//            d_which_row <= 0;
+//            if ((d_pwm_ctr == (255 - 1))) begin
+//                d_pwm_ctr <= 0;
+//            end
+//            else begin
+//                d_pwm_ctr <= (d_pwm_ctr + 1);
+//            end
+//        end
+//        else begin
+//            d_which_row <= (d_which_row + 1);
+//        end
+//    end
+//    else begin
+//        //d_do_latch <= 1'b0;
+//        d_which_col <= (d_which_col + 1);
+//    end
 
-        if ((d_which_row == ((32 / 2) - 1))) begin
-            //d_cur_img <= img;
-            d_which_row <= 0;
-            if ((d_pwm_ctr == (255 - 1))) begin
+    d_which_col <= d_next_col;
+	 d_which_row <= d_next_row;
+    if (d_next_col == 63) begin
+        d_next_col <= 0;
+
+        if (d_next_row == (32/2)-1) begin
+        //if (d_which_row == 4) begin
+            d_next_row <= 0;
+				if ((d_pwm_ctr == (255 - 1))) begin
                 d_pwm_ctr <= 0;
             end
             else begin
                 d_pwm_ctr <= (d_pwm_ctr + 1);
             end
-        end
-        else begin
-            d_which_row <= (d_which_row + 1);
-        end
-    end
-    else begin
-        d_do_latch <= 1'b0;
-        d_which_col <= (d_which_col + 1);
-    end
-
-    if (d_which_col == 62) begin
-        d_next_col <= 0;
-
-        if (d_which_row == (32/2)-2) begin
-            d_next_row <= 0;
         end else begin
             d_next_row <= d_next_row + 1;
         end
     end else begin
         d_next_col <= d_next_col + 1;
     end
+  end
 end
 
 
-always @(negedge clk) begin: MAIN_D_CLOSE_LATCH
-    latch <= d_do_latch;
-end
+//always @(negedge clk) begin: MAIN_D_CLOSE_LATCH
+//    latch <= d_do_latch;
+//end
 
 
 
