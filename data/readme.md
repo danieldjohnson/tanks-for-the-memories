@@ -1,0 +1,1 @@
+This directory will contain various files, and is how the game engine interacts with the web server.
