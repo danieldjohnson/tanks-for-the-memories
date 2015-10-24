@@ -6,7 +6,7 @@
 import math
 
 DEBUG           = True
-TANK_COLORS     = []
+TANK_COLORS     = [(30,30,90), (90,30,30), (30,90,30), (90,90,30), (90,30,90), (30,90,90), (30,60,90), (60,30,90), (90,60,30), (60,30,90)]
 # first 10 codes are devoted to 10 possible tanks
 EMPTY           = 10
 WALL            = 11

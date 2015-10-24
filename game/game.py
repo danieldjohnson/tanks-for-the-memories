@@ -18,11 +18,11 @@ class Game:
 
         self.perma_board = perma_board # <-- a list of lists of pixel values
         if len(self.perma_board) == 0:
-            for i in range(64):
+            for i in range(32): #64
                 self.perma_board += [[10]*64]
 
         self.ghost_board = [] # <-- a list of lists of pixel values
-        for i in range(64):
+        for i in range(32): #64
             self.ghost_board += [[10]*64]
 
         self.board       = copy.deepcopy(self.perma_board)
@@ -74,7 +74,7 @@ class Game:
         self.t_minus -= dt
         self.board = copy.deepcopy(self.perma_board)
         self.ghost_board = []
-        for i in range(64):
+        for i in range(32): #64
             self.ghost_board += [[10]*64]
 
         # bullets move first thus if they get shot they can escape their mama tank
@@ -87,7 +87,7 @@ class Game:
             y = pos[1]
 
             # kill the bullet if it hits a wall
-            if (x < 0) or (y < 0) or (x > 63) or (y > 63):
+            if (x < 0) or (y < 0) or (x > 63) or (y > 31): #63
                 self.bullets.remove(b)
             elif (self.board[y][x] == WALL):
                 self.bullets.remove(b)
@@ -109,7 +109,7 @@ class Game:
                     x = p[0]
                     y = p[1]
                     # if you hit a wall or go off the edge of the screen, don't move
-                    if (self.board[y][x] == WALL) or (self.board[y][x] < 10) or (x < 0) or (y < 0) or (x > 63) or (y > 63):
+                    if (self.board[y][x] == WALL) or (self.board[y][x] < 10) or (x < 0) or (y < 0) or (x > 63) or (y > 31): #63
                         t.move(-1.0*dt)
                         break
 
@@ -218,15 +218,15 @@ class Game:
         tank_2 = Tank("dickbutt",
                       "ais/test_2.py",
                       copy.deepcopy(self.perma_board),
-                      12,42)
+                      12,22)
         tank_3 = Tank("sex",
                       "ais/test_3.py",
                       copy.deepcopy(self.perma_board),
-                      27,45)
+                      24,10)
         doctor = Tank("doc",
                       "ais/doctor.py",
                       copy.deepcopy(self.perma_board),
-                      5,45)
+                      5,15)
         hugger = Tank("hug",
                       "ais/wall_hugger.py",
                       copy.deepcopy(self.perma_board),
@@ -236,7 +236,7 @@ class Game:
 
 if __name__ == "__main__":
 
-    the_game = Game(walls_w_hosp)
+    the_game = Game(walls_w_hosp_32)
     last_time_stamp = time.time()
     t_minus = 0.1
     while True:
