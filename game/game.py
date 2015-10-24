@@ -160,6 +160,7 @@ if __name__ == "__main__":
     while True:
         the_game.update()
         t_minus -= (time.time() - last_time_stamp)
+        last_time_stamp = time.time()
         if t_minus < 0:
             the_game.draw_board()
         t_minus = 2
