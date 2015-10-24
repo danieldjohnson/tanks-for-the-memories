@@ -69,8 +69,12 @@ class Game:
     def real_time_update(self, dt):
         """ update positions, kill things, in real time
             ASSUMES THAT self.t_minus >= dt"""
+
         self.t_minus -= dt
         self.board = copy.deepcopy(self.perma_board)
+        self.ghost_board = []
+        for i in range(64):
+            self.ghost_board += [[10]*64]
 
         # bullets move first thus if they get shot they can escape their mama tank
         for b in self.bullets:
@@ -104,7 +108,7 @@ class Game:
                     x = p[0]
                     y = p[1]
                     # if you hit a wall or go off the edge of the screen, don't move
-                    if (self.board[y][x] == WALL) or (x < 0) or (y < 0) or (x > 63) or (y > 63):
+                    if (self.board[y][x] == WALL) or (self.board[y][x] < 10) or (x < 0) or (y < 0) or (x > 63) or (y > 63):
                         t.move(-1.0*dt)
                         break
 
@@ -142,6 +146,56 @@ class Game:
                     for p in positions:
                         if self.board[y][x] == i:
                             self.board[y][x] = EMPTY
+                # otherwise add the "eye" of the tank to the ghost_board
+                else:
+                    t_angle_scaled = (int(round(math.atan2(t.y_vel,t.x_vel)*8/(2*math.pi)))+4)%8
+                    #
+                    # adds a ghost eye acording to the direction according to the map
+                    #
+                    #     1 2 3
+                    #     0 x 4
+                    #     7 6 5
+                    #
+                    # corresponding to the normal geometric angle
+                    #
+                    eye_x = int(round(t.x_pos))
+                    eye_y = int(round(t.y_pos))
+                    elif t_angle_scaled == 0:
+                        eye_x -= 1
+                    elif t_angle_scaled == 1:
+                        eye_x -= 1
+                        eye_y -= 1
+                    elif t_angle_scaled == 2:
+                        eye_y -= 1
+                    elif t_angle_scaled == 3:
+                        eye_y -= 1
+                        eye_x += 1
+                    if t_angle_scaled == 4:
+                        eye_x += 1
+                    elif t_angle_scaled == 5:
+                        eye_x += 1
+                        eye_y += 1
+                    elif t_angle_scaled == 6:
+                        eye_y += 1
+                    elif t_angle_scaled == 7:
+                        eye_x -= 1
+                        eye_y += 1
+
+                    self.ghost_board[eye_y][eye_x] = EYE
+
+        # finally draw the ghost board over the regular board
+        for y in range(len(self.board)):
+            for x in range(len(self.board[y])):
+                ghost = self.ghost_board[y][x]
+                if ghost != EMPTY:
+                    self.board[y][x] = ghost
+
+
+
+
+
+
+
 
 
     # DRAWING THINGS
@@ -190,7 +244,6 @@ if __name__ == "__main__":
         last_time_stamp = time.time()
         if t_minus < 0:
             the_game.draw_board()
-            print(the_game.tanks[0].hp)
             t_minus = 0.1
 
 

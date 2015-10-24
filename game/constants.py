@@ -13,6 +13,7 @@ WALL            = 11
 HOSPITAL        = 12
 BULLET          = 13
 AMMO            = 14
+EYE             = 15
 
 MAX_TANK_SPEED  = 1    # <-- pixels/second
 MAX_TANK_RADIUS = 2    # <-- cornerlength IF WE GET WEIRD BUGS CHECK THIS
@@ -22,4 +23,4 @@ BULLET_SPEED    = 15   # <-- pixels/second
 HOSPITAL_RATE   = 0.1  # <-- hp/second
 TURN_RATE       = 1    # <-- turns/second
 
-DEBUG_STRINGS   = ["@","@","@","@","@","@","@","@","@","@"," ","#","H","*"]
+DEBUG_STRINGS   = ["@","@","@","@","@","@","@","@","@","@"," ","#","H","*","A","o"]

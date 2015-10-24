@@ -30,7 +30,7 @@ class Tank:
         self.damage_IDs = []
 
     def take_turn(self, tank_coords):
-        state = [tank_coords, self.hp, self.ammo, [self.x_pos, self.y_pos], self.damage_IDs]
+        state = [tank_coords, self.hp, self.ammo, [int(round(self.x_pos)), int(round(self.y_pos))], self.damage_IDs]
         turn_info = self.AI.takeTurn(state)
 
         # set the tanks speed
