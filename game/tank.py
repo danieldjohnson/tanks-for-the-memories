@@ -67,18 +67,39 @@ class Tank:
 		self.x_pos += x_vel*dt
 		self.y_pos += y_vel*dt
 
+	def get_center():
+		""" rounds the x and y positions to get the relevant pixel """
+		x = round(self.x_pos)
+		y = round(self.y_pos)
+		return [x,y]
+
 	def get_pixel_pos():
-		""" returns a list of points """
-		top = int(self.y_pos)
-		bottom = int(self.y_pos + 1)
-		left = int(self.x_pos)
-		right = int(self.x_pos + 1)
+		""" returns a list of points in the order		
 
-		upper_left  = [int(self.x_pos)  , int(self.y_pos)  ]
-		upper_right = [int(self.x_pos+1), int(self.y_pos)  ]
-		lower_left  = [int(self.x_pos)  , int(self.y_pos+1)]
-		lower_right = [int(self.x_pos+1), int(self.y_pos+1)]
+			         -y
+			          |
+			    -x ---+--- +x
+			          |
+			         +y
 
-		return [upper_left,upper_right,lower_left,lower_right]
+
+				    0 1 2  
+				    3 4 5  
+				    6 7 8   """ 
+
+		c = get_center()
+
+		zeroth  = [c[0]-1 , c[1]-1 ]
+		first   = [c[0]   , c[1]-1 ]
+		second  = [c[0]+1 , c[1]-1 ]
+		third   = [c[0]-1 , c[1]   ]
+		fourth  = [c[0]   , c[1]   ]
+		fifth   = [c[0]+1 , c[1]   ]
+		sixth   = [c[0]-1 , c[1]+1 ]
+		seventh = [c[0]   , c[1]+1 ]
+		eighth  = [c[0]+1 , c[1]+1 ]
+
+
+		return [zeroth, first, second, third, fourth, fifth, sixth, seventh, eighth]
 
 	
