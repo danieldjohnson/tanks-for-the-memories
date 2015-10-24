@@ -55,6 +55,7 @@ class Game:
             for t in self.tanks:
                 if t:
                     bullet = t.take_turn(tank_coords)
+                    t.update_stat_file()
                     if bullet:
                         self.bullets += [bullet]
 
