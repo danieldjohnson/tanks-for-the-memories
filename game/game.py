@@ -234,23 +234,23 @@ class Game:
     # DRAWING THINGS
 
     def draw_board(self):
-        bytes_to_write = [0 for i in range(3*32*64)]
-        for row in range(32/2):
-            for col in range(64):
-                bytes_to_write[(row*64+col)*3*2+0] = rev_bits_table[gamma_correction_table[COLORS[self.board[row][col]][0]]
-                bytes_to_write[(row*64+col)*3*2+1] = rev_bits_table[gamma_correction_table[COLORS[self.board[row][col]][1]]
-                bytes_to_write[(row*64+col)*3*2+2] = rev_bits_table[gamma_correction_table[COLORS[self.board[row+16][col]][2]]
-                bytes_to_write[(row*64+col)*3*2+3] = rev_bits_table[gamma_correction_table[COLORS[self.board[row+16][col]][0]]
-                bytes_to_write[(row*64+col)*3*2+4] = rev_bits_table[gamma_correction_table[COLORS[self.board[row+16][col]][1]]
-                bytes_to_write[(row*64+col)*3*2+5] = rev_bits_table[gamma_correction_table[COLORS[self.board[row+16][col]][2]]
-        with open("/dev/spidev0.1" as spifile):
-            spifile.write(bytearray(bytes_to_write))
-        """with open("board") as f, open ("test, wb") as fout:
+        if OUTPUT_STDOUT:
             for a in self.board:
                 for b in a:
-
                     print DEBUG_STRINGS[b],
-                print "" """"
+                print ""
+        if OUTPUT_LED:
+            bytes_to_write = [0 for i in range(3*32*64)]
+            for row in range(32/2):
+                for col in range(64):
+                    bytes_to_write[(row*64+col)*3*2+0] = rev_bits_table[gamma_correction_table[COLORS[self.board[row][col]][0]]]
+                    bytes_to_write[(row*64+col)*3*2+1] = rev_bits_table[gamma_correction_table[COLORS[self.board[row][col]][1]]]
+                    bytes_to_write[(row*64+col)*3*2+2] = rev_bits_table[gamma_correction_table[COLORS[self.board[row+16][col]][2]]]
+                    bytes_to_write[(row*64+col)*3*2+3] = rev_bits_table[gamma_correction_table[COLORS[self.board[row+16][col]][0]]]
+                    bytes_to_write[(row*64+col)*3*2+4] = rev_bits_table[gamma_correction_table[COLORS[self.board[row+16][col]][1]]]
+                    bytes_to_write[(row*64+col)*3*2+5] = rev_bits_table[gamma_correction_table[COLORS[self.board[row+16][col]][2]]]
+            with open("/dev/spidev0.1") as spifile:
+                spifile.write(bytearray(bytes_to_write))
 
     # TESTING THINGS
 
@@ -267,7 +267,7 @@ class Game:
         tank_3 = Tank("sex",
                       "ais/test_3.py",
                       copy.deepcopy(self.perma_board),
-                      27,45)
+                      5,12)
         # doctor = Tank("doc",
         #               "ais/doctor.py",
         #               copy.deepcopy(self.perma_board),

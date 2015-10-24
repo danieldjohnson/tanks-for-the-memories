@@ -19,7 +19,8 @@ var user_mapping = {};
 passport.use(new GoogleStrategy({
     clientID: credentials.GOOGLE_CONSUMER_KEY,
     clientSecret: credentials.GOOGLE_CONSUMER_SECRET,
-    callbackURL: 'http://79b7adfb.ngrok.io:3000/auth/google/return',
+    //callbackURL: 'http://79b7adfb.ngrok.io:3000',
+    callbackURL: 'http://localhost:3000/auth/google/return',
     },
     function(accessToken, refreshToken, profile, done) {
         console.log(profile);
@@ -113,7 +114,7 @@ app.get('/', function (req, res) {
 app.get('/auth/google',
     passport.authenticate('google', {scope: 'openid profile email', failureFlash: true}));
 
-app.get('/auth/google/return', 
+app.get('/auth/google/return',
     passport.authenticate('google', { failureRedirect: '/', failureFlash: true }),
     function(req, res) {
         // Successful authentication, redirect home.
