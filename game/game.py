@@ -28,8 +28,6 @@ class Game:
 		self.bullets     = []
 		self.t_minus     = TURN_RATE
 		self.last_time_stamp = time.time()
-		
-
 
 	# UPDATING THINGS
 
@@ -80,7 +78,7 @@ class Game:
 			# kill the bullet if it hits a wall
 			if (x < 0) or (y < 0) or (x > 63) or (y > 63):
 				bullets.remove(b)
-			else if (self.board[x][y] == WALL):
+			elif (self.board[x][y] == WALL):
 				bullets.remove(b)
 			else:
 				self.board[x][y] = BULLET
@@ -122,7 +120,7 @@ class Game:
 							t.damage_IDs += [b.ID]
 							bullets.remove(b)
 				# if you're on the hospital, heal yourself
-				else if (self.board[x][y] == HOSPITAL) and (t.recently_healed == false):
+				elif (self.board[x][y] == HOSPITAL) and (t.recently_healed == false):
 					t.heal(HOSPITAL_RATE, dt)
 					t.recently_healed = true
 				# finally set the pixel to be a tank
@@ -151,4 +149,13 @@ class Game:
 		#tank_2
 		#tank_3
 		return [tank_1]
+
+
+if __name__ == "__main__":
+
+	the_game = Game()
+	while True:
+		the_game.update()
+
+
 
