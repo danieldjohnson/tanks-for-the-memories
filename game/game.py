@@ -78,7 +78,9 @@ class Game:
 			y = pos[1]
 			
 			# kill the bullet if it hits a wall
-			if (self.board[x][y] == WALL):
+			if (x < 0) or (y < 0) or (x > 63) or (y > 63):
+				bullets.remove(b)
+			else if (self.board[x][y] == WALL):
 				bullets.remove(b)
 			else:
 				self.board[x][y] = BULLET
@@ -94,8 +96,8 @@ class Game:
 			for p in positions:
 				x = p[0]
 				y = p[1]
-				# if you hit a wall, don't move
-				if (self.board[x][y] == WALL):
+				# if you hit a wall or go off the edge of the screen, don't move
+				if (self.board[x][y] == WALL) or (x < 0) or (y < 0) or (x > 63) or (y > 63):
 					t.move(-1.0*dt)
 					break
 
