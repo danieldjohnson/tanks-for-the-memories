@@ -6,6 +6,7 @@
 
 import copy
 import time
+import select, sys
 from tank import Tank
 from constants import *
 from maps import *
@@ -55,7 +56,6 @@ class Game:
             for t in self.tanks:
                 if t:
                     bullet = t.take_turn(tank_coords)
-                    t.update_stat_file()
                     if bullet:
                         self.bullets += [bullet]
 
@@ -81,7 +81,7 @@ class Game:
             pos = b.get_pixel_pos()
             x = pos[0]
             y = pos[1]
-            
+
             # kill the bullet if it hits a wall
             if (x < 0) or (y < 0) or (x > 63) or (y > 63):
                 self.bullets.remove(b)
@@ -157,16 +157,16 @@ class Game:
 
     def load_test_tanks(self):
 
-        tank_1 = Tank("penis", 
-                      "ais/test_1.py", 
+        tank_1 = Tank("penis",
+                      "ais/test_1.py",
                       copy.deepcopy(self.perma_board),
                       27,27)
-        tank_2 = Tank("dickbutt", 
-                      "ais/test_2.py", 
+        tank_2 = Tank("dickbutt",
+                      "ais/test_2.py",
                       copy.deepcopy(self.perma_board),
                       12,42)
-        tank_3 = Tank("sex", 
-                      "ais/test_3.py", 
+        tank_3 = Tank("sex",
+                      "ais/test_3.py",
                       copy.deepcopy(self.perma_board),
                       27,45)
         doctor = Tank("doc",
@@ -186,6 +186,8 @@ if __name__ == "__main__":
     last_time_stamp = time.time()
     t_minus = 0.1
     while True:
+        if select.select([sys.stdin,],[],[],0.0)[0]:
+            print("sdfsdf")
         the_game.update()
         t_minus -= (time.time() - last_time_stamp)
         last_time_stamp = time.time()
@@ -193,6 +195,3 @@ if __name__ == "__main__":
             the_game.draw_board()
             print(the_game.tanks[0].hp)
             t_minus = 0.1
-
-
-
