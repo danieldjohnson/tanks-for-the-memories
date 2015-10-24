@@ -36,10 +36,7 @@ class Game:
 	# DRAWING THINGS
 
 	def draw_board():
-		""" currently do nothing """
-
-	def draw_bullet():
-		""" currently do nothing """
-
-	def draw_tank():
-		""" currently do nothing """
+		for a in board:
+			for b in a:
+				print DEBUG_STRINGS[b],
+			print "\n"
