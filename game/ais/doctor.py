@@ -29,6 +29,8 @@ WALL  = 11
 HOSPITAL = 12
 MAX_TANK_SPEED  = 1
 
+import copy
+
 class TankAI:
 
     def init(self,init_state):
@@ -118,7 +120,7 @@ class TankAI:
     def get_return(dir):
         x_dir = tank_coords[0][1] - x_pos
         y_dir = tank_coords[0][2] - y_pos
-        return [dir,True,[x_dir,y_dir]]
+        return [copy.deep_copy(dir),True,[x_dir,y_dir]]
 
     def detect_hosp(self,x_pos,y_pos):
         x = x_pos

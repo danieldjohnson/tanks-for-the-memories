@@ -29,6 +29,8 @@ WALL  = 11
 HOSPITAL = 12
 MAX_TANK_SPEED  = 1
 
+import copy
+
 class TankAI:
 
     def init(self,init_state):
@@ -47,7 +49,6 @@ class TankAI:
         E = self.E()
         W = self.W()
         S = self.S()
-
 
         if self.state == "begin":
             if not N:
@@ -115,7 +116,7 @@ class TankAI:
     def get_return(dir):
         x_dir = tank_coords[0][1] - x_pos
         y_dir = tank_coords[0][2] - y_pos
-        return [dir,True,[x_dir,y_dir]]
+        return [copy.deepcopy(dir),True,[x_dir,y_dir]]
 
     def N(self):
         return ((self.board[x_pos  ,y_pos-2]==WALL) or (self.board[x_pos-1,y_pos-2]==WALL) or (self.board[x_pos+1,y_pos-2]==WALL))

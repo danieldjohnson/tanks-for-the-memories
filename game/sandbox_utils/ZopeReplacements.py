@@ -38,7 +38,7 @@ def getSecurityManager():
     return sm
 
 def secureModule(mname, globals, locals):
-    if mname in ['math', 'random', 'functools', 'itertools']:
+    if mname in ['math', 'random', 'functools', 'itertools', 'copy']:
         return __import__(mname, globals, locals)
     return None
 
