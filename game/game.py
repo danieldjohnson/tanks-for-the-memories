@@ -147,9 +147,15 @@ class Game:
                       "ais/test_1.py", 
                       copy.deepcopy(self.perma_board),
                       32,32)
-        #tank_2
-        #tank_3
-        return [tank_1]
+        tank_2 = Tank("dickbutt", 
+                      "ais/test_2.py", 
+                      copy.deepcopy(self.perma_board),
+                      12,42)
+        tank_3 = Tank("sex", 
+                      "ais/test_3.py", 
+                      copy.deepcopy(self.perma_board),
+                      42,5)
+        return [tank_1,tank_2,tank_3]
 
 
 if __name__ == "__main__":
