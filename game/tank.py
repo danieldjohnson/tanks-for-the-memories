@@ -7,21 +7,31 @@
 
 class Tank:
 
-	def __init__(self, x_pos, y_pos, x_vel = 0,
-									 y_vel = 0,
-		 							 hp = 30,
-		                             ammo = 100):
+	def __init__(self, ID, x_pos, y_pos, x_vel = 0,
+									     y_vel = 0,
+		 							     hp = 30,
+		                                 ammo = 100):
 
+		self.ID    = ID
 		self.x_pos = x_pos
 		self.y_pos = y_pos
 		self.x_vel = x_vel
 		self.y_vel = y_vel
-		
+
 		self.hp = hp
 		self.ammo = ammo
 
+		self.recently_healed = false
 		self.recently_damaged = false
 		self.damage_dirs = []
+
+	def damage(dm):
+		""" damages the tank """
+		self.hp -= dm
+
+	def heal(rate,dt):
+		""" heals the tank if its standing on the hospital """
+		self.hp 
 
 	def move(dt):
 		""" updates the position of the tank"""

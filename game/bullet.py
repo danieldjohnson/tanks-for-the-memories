@@ -11,8 +11,10 @@ class Bullet:
 
 		self.x_pos = x_pos
 		self.y_pos = y_pos
-		self.x_vel = x_vel
-		self.y_vel = y_vel
+
+		speed = math.sqrt(self.x_vel**2 + self.y_vel**2)
+		self.x_vel = x_vel*BULLET_SPEED/speed 
+		self.y_vel = y_vel*BULLET_SPEED/speed
 
 	def move(dt):
 		""" updates the position of the bullet """
