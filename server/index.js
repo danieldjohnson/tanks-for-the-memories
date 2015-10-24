@@ -213,7 +213,7 @@ app.get('/status',
 
 var get_aifile_contents = function(idnum, cb) {
     var aifile = '../data/' + idnum + '.py';
-    var defaultfile = '../game/ais/test_1.py';
+    var defaultfile = '../game/ais/tank_template.py';
     fs.stat(aifile, function (err, stat) {
         if (!err && stat.isFile()){
             fs.readFile(aifile, cb);

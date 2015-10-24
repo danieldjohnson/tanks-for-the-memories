@@ -35,6 +35,6 @@ class TankAI:
         x_vel = 0 # movement direction
         y_vel = 0
         tx    = 1 # turret direction
-        ty    = 0
+        ty    = 0.5
         shoot = True
         return [[x_vel, y_vel], shoot, [tx, ty]]
