@@ -73,6 +73,12 @@ class Game:
 	# DRAWING THINGS
 
 	def draw_board():
+<<<<<<< HEAD
+		for a in board:
+			for b in a:
+				print DEBUG_STRINGS[b],
+			print "\n"
+=======
 		""" currently do nothing """
 
 	def draw_bullet():
@@ -81,3 +87,4 @@ class Game:
 	def draw_tank():
 		""" currently do nothing """
 
+>>>>>>> origin/master
