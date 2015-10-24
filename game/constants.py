@@ -3,12 +3,15 @@
 #
 # MuddHacks 2015
 #
+import math
+
 DEBUG           = True
-EMPTY           = 0
-WALL            = 1
-TANK            = 2
-BULLET          = 3
-HOSPITAL        = 4
+TANK_COLORS     = []
+# first 10 codes are devoted to 10 possible tanks
+EMPTY           = 10
+WALL            = 11
+BULLET          = 12
+HOSPITAL        = 13
 
 MAX_TANK_SPEED  = 4 # <-- pixels/second
 MAX_TANK_RADIUS = math.sqrt(2) # <-- cornerlength IF WE GET WEIRD BUGS CHECK THIS
