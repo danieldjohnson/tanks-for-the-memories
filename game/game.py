@@ -231,7 +231,7 @@ class Game:
                       "ais/wall_hugger.py",
                       copy.deepcopy(self.perma_board),
                       19,10)
-        return [tank_1,tank_2,tank_3,doctor,hugger,None,None,None,None,None,None]
+        return [tank_1,tank_2,tank_3,None,None,None,None,None,None,None,None]
 
 
 if __name__ == "__main__":
