@@ -136,7 +136,7 @@ class Game:
         for a in self.board:
             for b in a:
                 print DEBUG_STRINGS[b],
-            print "\n"
+            print ""
 
     # TESTING THINGS
 
@@ -153,7 +153,7 @@ class Game:
 
 if __name__ == "__main__":
 
-    the_game = Game()
+    the_game = Game(WALLS)
     while True:
         the_game.update()
         the_game.draw_board()
