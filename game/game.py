@@ -24,18 +24,6 @@ class Game:
 
 		self.board = copy.deepcopy(self.walls)
 
-		for t in tanks:
-
-			# move the tank
-			old_positions = t.get_pixel_pos() # <-- actually 4 points
-			t.move(dt)
-			positions = t.get_pixel_pos() 
-			for p in positions:
-				x = p[0]
-				y = p[1]
-				if (self.board[x][y] == WALL):
-					
-
 		for b in bullets:
 
 			# move the bullet
@@ -49,6 +37,37 @@ class Game:
 				bullets.remove(b)
 			else:
 				self.board[x][y] = BULLET
+
+		for t in tanks:
+
+			# move the tank
+			t.move(dt)
+
+			# check to see if the tank hits a wall
+			positions = t.get_pixel_pos() # <-- actually 9 points
+			for p in positions:
+				x = p[0]
+				y = p[1]
+				if (self.board[x][y] == WALL):
+					t.move(-1.0*dt)
+					break
+
+			# update the pixels on the board
+			positions = t.get_pixel_pos() # <-- actually 9 points
+			for p in positions:
+				x = p[0]
+				y = p[1]
+				if (self.board[x][y] == BULLET):
+					for b in bullets:
+						b_pos = b.get_pixel_pos()
+						b_x = b_pos[0]
+						b_y = b_pos[1]
+
+						if (x==b_x) and (y==b_y):
+							t.
+				self.board[x][y] = TANK
+
+
 
 
 	# DRAWING THINGS

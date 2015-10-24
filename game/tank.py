@@ -16,8 +16,12 @@ class Tank:
 		self.y_pos = y_pos
 		self.x_vel = x_vel
 		self.y_vel = y_vel
+		
 		self.hp = hp
 		self.ammo = ammo
+
+		self.recently_damaged = false
+		self.damage_dirs = []
 
 	def move(dt):
 		""" updates the position of the tank"""
