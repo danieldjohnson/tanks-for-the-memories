@@ -7,6 +7,7 @@
 import copy
 import time
 import select, sys
+import binascii
 from tank import Tank
 from constants import *
 from maps import *
@@ -194,18 +195,26 @@ class Game:
 
 
 
-
-
-
-
-
     # DRAWING THINGS
 
     def draw_board(self):
-        for a in self.board:
-            for b in a:
-                print DEBUG_STRINGS[b],
-            print ""
+        bytes_to_write = [0 for i in range(3*32*64)]
+        for row in range(32/2):
+            for col in range(64):
+                bytes_to_write[(row*64+col)*3*2+0] = rev_bits_table[gamma_correction_table[COLORS[self.board[row][col]][0]]
+                bytes_to_write[(row*64+col)*3*2+1] = rev_bits_table[gamma_correction_table[COLORS[self.board[row][col]][1]]
+                bytes_to_write[(row*64+col)*3*2+2] = rev_bits_table[gamma_correction_table[COLORS[self.board[row+16][col]][2]]
+                bytes_to_write[(row*64+col)*3*2+3] = rev_bits_table[gamma_correction_table[COLORS[self.board[row+16][col]][0]]
+                bytes_to_write[(row*64+col)*3*2+4] = rev_bits_table[gamma_correction_table[COLORS[self.board[row+16][col]][1]]
+                bytes_to_write[(row*64+col)*3*2+5] = rev_bits_table[gamma_correction_table[COLORS[self.board[row+16][col]][2]]
+        with open("/dev/spidev0.1" as spifile):
+            spifile.write(bytearray(bytes_to_write))
+        """with open("board") as f, open ("test, wb") as fout:
+            for a in self.board:
+                for b in a:
+
+                    print DEBUG_STRINGS[b],
+                print "" """"
 
     # TESTING THINGS
 
