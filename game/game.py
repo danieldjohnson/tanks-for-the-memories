@@ -6,6 +6,7 @@
 
 import copy
 import time
+from tank import Tank
 from constants import *
 
 class Game:
@@ -42,10 +43,17 @@ class Game:
 		# then do the turn
 		# then run the remaining time
 		if dt > self.t_minus:
+
 			real_time_update(self.t_minus)
+
+			# take the turns! if the tanks shoot, add them to the list
 			for t in self.tanks:
-				t.do_turn()
+				bullet = t.take_turn()
+				if bullet:
+					self.bullets += [bullet]
+
 			real_time_update(dt - self.t_minus)
+
 		# otherwise just run the whole time
 		else:
 			real_time_update(dt)
@@ -57,6 +65,7 @@ class Game:
 
 		self.board = copy.deepcopy(self.walls)
 
+		# bullets move first thus if they get shot they can escape their mama tank
 		for b in self.bullets:
 
 			# move the bullet
@@ -71,6 +80,7 @@ class Game:
 			else:
 				self.board[x][y] = BULLET
 
+		# then tanks move
 		for t in self.tanks:
 
 			# move the tank
@@ -100,8 +110,11 @@ class Game:
 
 						if (x==b_x) and (y==b_y):
 							t.damage(BULLET_DM)
+							if t.is_dead():
+								tanks.remove(t)
+								break
 							t.recently_damaged = true
-							t.damage_dirs += [[-1.0*b.x_vel,-1.0*b.y_vel]]
+							t.damage_IDs += [b.ID]
 							bullets.remove(b)
 				# if you're on the hospital, heal yourself
 				else if (self.board[x][y] == HOSPITAL) and (t.recently_healed == false):
@@ -112,10 +125,6 @@ class Game:
 
 			# once the tank is done moving, reset so it can be healed next update
 			t.recently_healed = false
-
-
-
-
 
 
 	# DRAWING THINGS

@@ -81,10 +81,10 @@ class AIManager(object):
 		filtered_tb += exc_only
 		return ''.join(filtered_tb)
 
-	def doTurn(self, state):
+	def takeTurn(self, state):
 		try:
 			with sandbox_timeout(EXECUTION_TIMEOUT):
-				action = self.ai_obj.doTurn(copy.deepcopy(state))
+				action = self.ai_obj.takeTurn(copy.deepcopy(state))
 
 		except BaseException:
 			self.log(self.fix_sandbox_exception())
