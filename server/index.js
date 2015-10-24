@@ -1,7 +1,6 @@
 var express = require('express');
 var passport = require('passport');
 var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
-var findOrCreate = require('mongoose-findorcreate');
 var path = require('path');
 var S = require('string');
 var flash = require('connect-flash');
