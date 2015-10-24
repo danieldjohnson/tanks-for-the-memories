@@ -11,6 +11,9 @@ from contextlib import contextmanager
 from numbers import Number
 from pprint import pprint
 
+import constants
+ZopeReplacements.import_mapping["constants"] = constants
+
 EXECUTION_TIMEOUT = 0.1
 
 class SandboxCodeExecutionFailed(Exception):
