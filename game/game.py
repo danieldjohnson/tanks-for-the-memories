@@ -163,7 +163,7 @@ if __name__ == "__main__":
         last_time_stamp = time.time()
         if t_minus < 0:
             the_game.draw_board()
-        t_minus = 2
+            t_minus = 2
 
 
 
