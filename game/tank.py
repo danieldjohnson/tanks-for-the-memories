@@ -24,4 +24,18 @@ class Tank:
 		self.x_pos += x_vel*dt
 		self.y_pos += y_vel*dt
 
+	def get_pixel_pos():
+		""" returns a list of points """
+		top = int(self.y_pos)
+		bottom = int(self.y_pos + 1)
+		left = int(self.x_pos)
+		right = int(self.x_pos + 1)
+
+		upper_left  = [int(self.x_pos)  , int(self.y_pos)  ]
+		upper_right = [int(self.x_pos+1), int(self.y_pos)  ]
+		lower_left  = [int(self.x_pos)  , int(self.y_pos+1)]
+		lower_right = [int(self.x_pos+1), int(self.y_pos+1)]
+
+		return [upper_left,upper_right,lower_left,lower_right]
+
 	
