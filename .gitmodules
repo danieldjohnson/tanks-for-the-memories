@@ -1,0 +1,6 @@
+[submodule "game/sandbox_utils/-f"]
+	path = game/sandbox_utils/-f
+	url = https://github.com/zopefoundation/RestrictedPython
+[submodule "game/sandbox_utils/RestrictedPython"]
+	path = game/sandbox_utils/RestrictedPython
+	url = https://github.com/zopefoundation/RestrictedPython
