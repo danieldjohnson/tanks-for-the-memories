@@ -14,17 +14,10 @@ var credentials = require('./credentials');
 
 var app = express();
 
-var UserSchema = new mongoose.Schema({
-    profile_id: String,
-    name: String,
-    email: String,
-    student_id_num: String,
-});
-UserSchema.plugin(findOrCreate);
-UserSchema.methods.findById = function (profile_id, cb) {
-  return this.model('User').find({ profile_id: profile_id }, cb);
-}
-var User = mongoose.model('User', UserSchema);
+
+
+var user_mapping = {};
+
 
 passport.use(new GoogleStrategy({
     clientID: credentials.GOOGLE_CONSUMER_KEY,
@@ -36,20 +29,24 @@ passport.use(new GoogleStrategy({
         if(!S(profile.emails[0].value).endsWith('@g.hmc.edu')){
             return done(null, false, { message: 'You need to sign up with a HMC account!'});
         }
-        User.findOrCreate({ profile_id: profile.id }, { name: profile.displayName, email: profile.emails[0].value }, function(err, user) {
-            return done(err, user);
-        });
+        if(!user_mapping[profile.id]){
+            user_mapping[profile.id] = {
+                profile_id: profile.id,
+                name: profile.displayName,
+                email: profile.emails[0].value,
+                student_id_num: null,
+            }
+        }
+        return done(null, user_mapping[profile.id]);
     }
 ));
 
 passport.serializeUser(function(user, done) {
-  done(null, user.id);
+    done(null, user.profile_id);
 });
 
-passport.deserializeUser(function(id, done) {
-    User.findById(id, function(err, user) {
-        done(err, user);
-    });
+passport.deserializeUser(function(profile_id, done) {
+    done(null, user_mapping[profile_id]);
 });
 
 var ensureUserLoggedIn = function (req, res, next) {
@@ -144,14 +141,7 @@ app.post('/account/setup',
     function (req, res) {
         if(/^\d{8}$/g.test(req.body.idnum)){
             req.user.student_id_num = req.body.idnum;
-            req.user.save(function(err){
-                if(err){
-                    console.log(err);
-                    res.status(500).send('Server db error');
-                } else {
-                    res.redirect('/account/info');
-                }
-            })
+            res.redirect('/account/info');
         } else {
             // Bad ID number
             res.redirect('/account/setup');

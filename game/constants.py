@@ -6,7 +6,7 @@
 import math
 
 DEBUG           = True
-TANK_COLORS     = []
+TANK_COLORS     = [(30,30,90), (90,30,30), (30,90,30), (90,90,30), (90,30,90), (30,90,90), (30,60,90), (60,30,90), (90,60,30), (60,30,90)]
 # first 10 codes are devoted to 10 possible tanks
 EMPTY           = 10
 WALL            = 11
@@ -15,9 +15,10 @@ BULLET          = 13
 AMMO            = 14
 EYE             = 15
 
+
 COLORS = TANK_COLORS + [(0,0,0), (120, 120, 120), (0,0,200), (200,0,0), (0,0,0), (0,200,0)]
 
-MAX_TANK_SPEED  = 4    # <-- pixels/second
+MAX_TANK_SPEED  = 1    # <-- pixels/second
 MAX_TANK_RADIUS = 2    # <-- cornerlength IF WE GET WEIRD BUGS CHECK THIS
 MAX_TANK_HP     = 30
 BULLET_DM       = 1

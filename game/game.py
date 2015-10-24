@@ -8,9 +8,14 @@ import copy
 import time
 import select, sys
 import binascii
+import sys
+import random
+import select
+
 from tank import Tank
 from constants import *
 from maps import *
+from tank_ais import SandboxCodeExecutionFailed
 
 class Game:
 
@@ -19,11 +24,11 @@ class Game:
 
         self.perma_board = perma_board # <-- a list of lists of pixel values
         if len(self.perma_board) == 0:
-            for i in range(64):
+            for i in range(32): #64
                 self.perma_board += [[10]*64]
 
         self.ghost_board = [] # <-- a list of lists of pixel values
-        for i in range(64):
+        for i in range(32): #64
             self.ghost_board += [[10]*64]
 
         self.board       = copy.deepcopy(self.perma_board)
@@ -31,6 +36,8 @@ class Game:
         self.bullets     = []
         self.t_minus     = TURN_RATE
         self.last_time_stamp = time.time()
+
+        self.pending_tank_ids = []
 
     # UPDATING THINGS
 
@@ -49,6 +56,32 @@ class Game:
 
             self.real_time_update(self.t_minus)
 
+            # add new tanks, if necessary
+            for newid in self.pending_tank_ids:
+                for i in range(len(self.tanks)):
+                    if self.tanks[i] is not None and self.tanks[i].ID == newid:
+                        # TODO: Update the tank
+                        break
+                else:
+                    # Tank wasn't found! Add it
+                    for i in range(len(self.tanks)):
+                        if self.tanks[i] is None:
+                            # Found a space for our tank
+                            try:
+                                newtank = Tank(newid,
+                                              "../data/"+newid+".py",
+                                              copy.deepcopy(self.perma_board),
+                                              random.randint(2,62),
+                                              random.randint(2,62))
+                            except SandboxCodeExecutionFailed:
+                                # Couldn't create tank. Skip to next tank
+                                break
+                            else:
+                                self.tanks[i] = newtank
+                                # Move on to next tank
+                                break
+            self.pending_tank_ids = []
+
             # take the turns! if the tanks shoot, add them to the list
             tank_coords = []
             for t in self.tanks:
@@ -59,6 +92,9 @@ class Game:
                     bullet = t.take_turn(tank_coords)
                     if bullet:
                         self.bullets += [bullet]
+            for t in self.tanks:
+                if t:
+                    t.update_stat_file()
 
             self.real_time_update(dt - self.t_minus)
             self.t_minus = TURN_RATE
@@ -75,7 +111,7 @@ class Game:
         self.t_minus -= dt
         self.board = copy.deepcopy(self.perma_board)
         self.ghost_board = []
-        for i in range(64):
+        for i in range(32): #64
             self.ghost_board += [[10]*64]
 
         # bullets move first thus if they get shot they can escape their mama tank
@@ -88,7 +124,7 @@ class Game:
             y = pos[1]
 
             # kill the bullet if it hits a wall
-            if (x < 0) or (y < 0) or (x > 63) or (y > 63):
+            if (x < 0) or (y < 0) or (x > 63) or (y > 31): #63
                 self.bullets.remove(b)
             elif (self.board[y][x] == WALL):
                 self.bullets.remove(b)
@@ -110,7 +146,7 @@ class Game:
                     x = p[0]
                     y = p[1]
                     # if you hit a wall or go off the edge of the screen, don't move
-                    if (self.board[y][x] == WALL) or (self.board[y][x] < 10) or (x < 0) or (y < 0) or (x > 63) or (y > 63):
+                    if (self.board[y][x] == WALL) or (self.board[y][x] < 10) or (x < 0) or (y < 0) or (x > 63) or (y > 31): #63
                         t.move(-1.0*dt)
                         break
 
@@ -227,30 +263,34 @@ class Game:
         tank_2 = Tank("dickbutt",
                       "ais/test_2.py",
                       copy.deepcopy(self.perma_board),
-                      12,42)
+                      12,22)
         tank_3 = Tank("sex",
                       "ais/test_3.py",
                       copy.deepcopy(self.perma_board),
                       27,45)
-        doctor = Tank("doc",
-                      "ais/doctor.py",
-                      copy.deepcopy(self.perma_board),
-                      5,45)
-        hugger = Tank("hug",
-                      "ais/wall_hugger.py",
-                      copy.deepcopy(self.perma_board),
-                      19,10)
-        return [tank_1,tank_2,tank_3,doctor,hugger,None,None,None,None,None,None]
+        # doctor = Tank("doc",
+        #               "ais/doctor.py",
+        #               copy.deepcopy(self.perma_board),
+        #               5,45)
+        # hugger = Tank("hug",
+        #               "ais/wall_hugger.py",
+        #               copy.deepcopy(self.perma_board),
+        #               19,10)
+        #
+        #               doctor,hugger,
+        return [tank_1,tank_2,tank_3,None,None,None,None,None,None,None,None]
 
 
 if __name__ == "__main__":
 
-    the_game = Game(walls_w_hosp)
+    the_game = Game(walls_w_hosp_32)
     last_time_stamp = time.time()
     t_minus = 0.1
+    buffered_input = ""
     while True:
-        if select.select([sys.stdin,],[],[],0.0)[0]:
-            print("sdfsdf")
+        if select.select([sys.stdin,],[],[],0.0) == ([sys.stdin],[],[]):
+            idnum = sys.stdin.readline()[2:-3]
+            the_game.pending_tank_ids.append(idnum)
         the_game.update()
         t_minus -= (time.time() - last_time_stamp)
         last_time_stamp = time.time()
