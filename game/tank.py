@@ -106,4 +106,10 @@ class Tank:
 
         return [zeroth, first, second, third, fourth, fifth, sixth, seventh, eighth]
 
-    
+    def update_stat_file(self):
+        """ updates the status file, which is shown in the web portal """
+        logfile = "../data/{}_stat.txt".format(self.AI.idnum)
+        rhp = int(math.ceil(self.hp))
+        healthbar = "#"*rhp + "."*(MAX_TANK_HP - rhp)
+        with open(logfile, 'w') as f:
+            f.write("Health: [{}] {}/{}\nAmmo: {}\n".format(healthbar, self.hp, MAX_TANK_HP, self.ammo))

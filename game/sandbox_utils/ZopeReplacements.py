@@ -1,5 +1,7 @@
 from SimpleObjectPolicies import Containers, ContainerAssertions
 
+import_mapping = {}
+
 class SecurityManager(object):
     # def validate(self, *args):
     def validate(self, accessed=None, container=None, name=None, value=None,
@@ -40,6 +42,8 @@ def getSecurityManager():
 def secureModule(mname, globals, locals):
     if mname in ['math', 'random', 'functools', 'itertools', 'copy']:
         return __import__(mname, globals, locals)
+    elif mname in import_mapping:
+    	return import_mapping[mname]
     return None
 
 class Unauthorized(Exception):

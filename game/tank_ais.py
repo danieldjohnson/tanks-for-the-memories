@@ -11,6 +11,9 @@ from contextlib import contextmanager
 from numbers import Number
 from pprint import pprint
 
+import constants
+ZopeReplacements.import_mapping["constants"] = constants
+
 EXECUTION_TIMEOUT = 0.1
 
 class SandboxCodeExecutionFailed(Exception):
@@ -37,11 +40,14 @@ class AIManager(object):
     Class that wraps a sandboxed AI implementation
     """
 
-    def __init__(self, path, initstate):
+    def __init__(self, path, initstate, print_to_log=True):
         with open(path) as f:
             text = f.read()
 
+        self.print_to_log = print_to_log
+        self.logbuffer = []
         self.name = os.path.basename(path)
+        self.idnum = self.name[:-3]
         try:
             self.code = compile_restricted(text, os.path.basename(path), 'exec')
 
@@ -56,6 +62,7 @@ class AIManager(object):
                 self.ai_obj = self.sbxglobals['TankAI']()
                 self.ai_obj.init(copy.deepcopy(initstate))
 
+            self.flushlog()
         except BaseException:
             raise SandboxCodeExecutionFailed(self.fix_sandbox_exception())
 
@@ -66,12 +73,18 @@ class AIManager(object):
         return LoggerHelper()
 
     def log(self, string):
-        print "FROM {}: {}".format(self.name, string)
+        if self.print_to_log:
+            self.logbuffer.append(string)
+        else:
+            print string,
+
+    def flushlog(self):
+        logfile = "../data/{}_out.log".format(self.idnum)
+        with open(logfile, 'a') as f:
+            f.writelines(self.logbuffer)
+        self.logbuffer = []
 
     def fix_sandbox_exception(self):
-        print "--- orig exc"
-        print traceback.format_exc()
-        print "---"
         tb_parts = traceback.extract_tb(sys.exc_traceback)
         exc_only = traceback.format_exception_only(sys.exc_type, sys.exc_value)
         filtered_tb_parts = [part for part in tb_parts if part[0] == self.name]
@@ -89,6 +102,8 @@ class AIManager(object):
         except BaseException:
             self.log(self.fix_sandbox_exception())
             action = [[0,0],False,[0,0]]
+
+        self.flushlog()
 
         # Verify desired move
         if action is None:

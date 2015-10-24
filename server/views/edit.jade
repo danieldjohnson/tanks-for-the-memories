@@ -1,0 +1,22 @@
+extends layout
+
+block header_includes
+  link(rel='stylesheet', href='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.8.0/codemirror.min.css')
+  link(rel='stylesheet', href='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.8.0/theme/neo.min.css')
+
+  style(type='text/css')
+    | .CodeMirror {
+    |   border: 1px solid #eee;
+    |   height: auto;
+    | }
+
+block content
+  div.container
+    button.btn.btn-default.disabled#save Saved
+    textarea#editor= initialcontents
+    h4 Compiling output:
+    pre#compile-output
+
+  script(src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.8.0/codemirror.min.js')
+  script(src='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.8.0/mode/python/python.min.js')
+  script(src='/js/edit.js')

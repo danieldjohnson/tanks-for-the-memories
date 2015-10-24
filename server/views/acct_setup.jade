@@ -1,0 +1,15 @@
+extends layout
+
+block content
+  div.container
+    div.jumbotron
+      h1 Account Setup
+      p We need you to fill in your ID first! Make sure its correct: you won't be able to control your tank without one.
+    form(method="post", action="/account/setup")#idnum_form
+      div.form-group#idnum_group
+        label(for="idnum") Student ID number (8-digit one):
+        input(type="text", name="idnum").form-control#idnum
+        span.help-block#idnum_help
+      button(type="submit").btn.btn-default#submitbutton Submit
+
+  script(src='/js/acct_setup.js')
