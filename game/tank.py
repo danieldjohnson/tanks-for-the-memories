@@ -24,7 +24,7 @@ class Tank:
         self.hp = hp
         self.ammo = ammo
 
-        self.recently_healed = false
+        self.recently_healed = False
         self.damage_IDs = []
 
     def take_turn(self, tank_coords):
@@ -64,14 +64,14 @@ class Tank:
 
     def move(self,dt):
         """ updates the position of the tank"""
-        self.x_pos += x_vel*dt
-        self.y_pos += y_vel*dt
+        self.x_pos += self.x_vel*dt
+        self.y_pos += self.y_vel*dt
 
     def get_center(self):
         """ rounds the x and y positions to get the relevant pixel """
         x = round(self.x_pos)
         y = round(self.y_pos)
-        return [x,y]
+        return [int(x),int(y)]
 
     def get_pixel_pos(self):
         """ returns a list of points in the order       
@@ -87,7 +87,7 @@ class Tank:
                     3 4 5  
                     6 7 8   """ 
 
-        c = get_center()
+        c = self.get_center()
 
         zeroth  = [c[0]-1 , c[1]-1 ]
         first   = [c[0]   , c[1]-1 ]

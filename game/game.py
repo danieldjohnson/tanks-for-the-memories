@@ -17,11 +17,11 @@ class Game:
         self.perma_board = perma_board # <-- a list of lists of pixel values
         if len(self.perma_board) == 0:
             for i in range(64):
-                self.perma_board += [[0]*64]
+                self.perma_board += [[10]*64]
 
         self.ghost_board = [] # <-- a list of lists of pixel values
         for i in range(64):
-            self.ghost_board += [[0]*64]
+            self.ghost_board += [[10]*64]
 
         self.board       = copy.deepcopy(self.perma_board)
         self.tanks       = self.load_test_tanks()
@@ -42,7 +42,7 @@ class Game:
         # then run the remaining time
         if dt > self.t_minus:
 
-            real_time_update(self.t_minus)
+            self.real_time_update(self.t_minus)
 
             # take the turns! if the tanks shoot, add them to the list
             tank_coords = []
@@ -53,18 +53,18 @@ class Game:
                 if bullet:
                     self.bullets += [bullet]
 
-            real_time_update(dt - self.t_minus)
+            self.real_time_update(dt - self.t_minus)
 
         # otherwise just run the whole time
         else:
-            real_time_update(dt)
+            self.real_time_update(dt)
 
 
     def real_time_update(self, dt):
         """ update positions, kill things, in real time
             ASSUMES THAT self.t_minus >= dt"""
 
-        self.board = copy.deepcopy(self.walls)
+        self.board = copy.deepcopy(self.perma_board)
 
         # bullets move first thus if they get shot they can escape their mama tank
         for b in self.bullets:
@@ -84,7 +84,8 @@ class Game:
                 self.board[x][y] = BULLET
 
         # then tanks move
-        for t in self.tanks:
+        for i in range(len(self.tanks)):
+            t = self.tanks[i]
 
             # move the tank
             t.move(dt)
@@ -116,24 +117,23 @@ class Game:
                             if t.is_dead():
                                 tanks.remove(t)
                                 break
-                            t.recently_damaged = true
                             t.damage_IDs += [b.ID]
                             bullets.remove(b)
                 # if you're on the hospital, heal yourself
-                elif (self.board[x][y] == HOSPITAL) and (t.recently_healed == false):
+                elif (self.board[x][y] == HOSPITAL) and (t.recently_healed == False):
                     t.heal(HOSPITAL_RATE, dt)
-                    t.recently_healed = true
+                    t.recently_healed = True
                 # finally set the pixel to be a tank
-                self.board[x][y] = TANK
+                self.board[x][y] = i
 
             # once the tank is done moving, reset so it can be healed next update
-            t.recently_healed = false
+            t.recently_healed = False
 
 
     # DRAWING THINGS
 
     def draw_board(self):
-        for a in board:
+        for a in self.board:
             for b in a:
                 print DEBUG_STRINGS[b],
             print "\n"
@@ -156,6 +156,7 @@ if __name__ == "__main__":
     the_game = Game()
     while True:
         the_game.update()
+        the_game.draw_board()
 
 
 

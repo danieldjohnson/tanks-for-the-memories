@@ -19,13 +19,13 @@ class Bullet:
 
     def move(self, dt):
         """ updates the position of the bullet """
-        self.x_pos += x_vel*dt
-        self.y_pos += y_vel*dt
+        self.x_pos += self.x_vel*dt
+        self.y_pos += self.y_vel*dt
 
     def get_pixel_pos(self):
         """ rounds the x and y positions to get the relevant pixel """
         x = round(self.x_pos)
         y = round(self.y_pos)
-        return [x,y]
+        return [int(x),int(y)]
 
     

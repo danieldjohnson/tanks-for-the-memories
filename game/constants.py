@@ -20,4 +20,4 @@ BULLET_SPEED    = 15 # <-- pixels/second
 HOSPITAL_RATE   = 1  # <-- hp/second
 TURN_RATE       = 1  # <-- turns/second
 
-DEBUG_STRINGS   = [" ","#","@","*","O"]
+DEBUG_STRINGS   = ["@","@","@","@","@","@","@","@","@","@"," ","#","*","H"]

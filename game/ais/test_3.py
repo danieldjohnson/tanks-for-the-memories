@@ -29,7 +29,7 @@ class TankAI:
     def __init__(self,init_state):
         # do nothing
 
-    def do_turn (self,state):
+    def take_turn (self,state):
         [tank_coords, hp, ammo, [x_pos, y_pos], aggressors] = state
         x_vel = 10 # movement direction
         y_vel = 0
