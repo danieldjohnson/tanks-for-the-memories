@@ -8,6 +8,7 @@ import copy
 import time
 from tank import Tank
 from constants import *
+from maps import *
 
 class Game:
 
@@ -83,10 +84,10 @@ class Game:
             # kill the bullet if it hits a wall
             if (x < 0) or (y < 0) or (x > 63) or (y > 63):
                 self.bullets.remove(b)
-            elif (self.board[x][y] == WALL):
+            elif (self.board[y][x] == WALL):
                 self.bullets.remove(b)
             else:
-                self.board[x][y] = BULLET
+                self.board[y][x] = BULLET
 
         # then tanks move
         for i in range(len(self.tanks)):
@@ -103,7 +104,7 @@ class Game:
                     x = p[0]
                     y = p[1]
                     # if you hit a wall or go off the edge of the screen, don't move
-                    if (self.board[x][y] == WALL) or (x < 0) or (y < 0) or (x > 63) or (y > 63):
+                    if (self.board[y][x] == WALL) or (x < 0) or (y < 0) or (x > 63) or (y > 63):
                         t.move(-1.0*dt)
                         break
 
@@ -113,7 +114,7 @@ class Game:
                     x = p[0]
                     y = p[1]
                     # if you hit a bullet, find the bullet, kill it, take damage
-                    if (self.board[x][y] == BULLET) and not t.is_dead():
+                    if (self.board[y][x] == BULLET) and not t.is_dead():
                         for b in self.bullets:
                             b_pos = b.get_pixel_pos()
                             b_x = b_pos[0]
@@ -127,11 +128,11 @@ class Game:
                                     self.tanks[i] = None
                                     break
                     # if you're on the hospital, heal yourself
-                    elif (self.board[x][y] == HOSPITAL) and (t.recently_healed == False):
+                    elif (self.board[y][x] == HOSPITAL) and (not t.recently_healed):
                         t.heal(HOSPITAL_RATE, dt)
                         t.recently_healed = True
                     # finally set the pixel to be a tank
-                    self.board[x][y] = i
+                    self.board[y][x] = i
 
                 # once the tank is done moving, reset so it can be healed next update
                 t.recently_healed = False
@@ -139,8 +140,8 @@ class Game:
                 # if t died, reset any pixels that were written before the tank died
                 if t.is_dead():
                     for p in positions:
-                        if self.board[x][y] == i:
-                            self.board[x][y] = EMPTY
+                        if self.board[y][x] == i:
+                            self.board[y][x] = EMPTY
 
 
     # DRAWING THINGS
@@ -158,7 +159,7 @@ class Game:
         tank_1 = Tank("penis", 
                       "ais/test_1.py", 
                       copy.deepcopy(self.perma_board),
-                      32,32)
+                      27,27)
         tank_2 = Tank("dickbutt", 
                       "ais/test_2.py", 
                       copy.deepcopy(self.perma_board),
@@ -166,13 +167,21 @@ class Game:
         tank_3 = Tank("sex", 
                       "ais/test_3.py", 
                       copy.deepcopy(self.perma_board),
-                      42,5)
-        return [tank_1,tank_2,tank_3,None,None,None,None,None,None,None,None]
+                      27,45)
+        doctor = Tank("doc",
+                      "ais/doctor.py",
+                      copy.deepcopy(self.perma_board),
+                      5,45)
+        hugger = Tank("hug",
+                      "ais/wall_hugger.py",
+                      copy.deepcopy(self.perma_board),
+                      19,10)
+        return [tank_1,tank_2,tank_3,doctor,hugger,None,None,None,None,None,None]
 
 
 if __name__ == "__main__":
 
-    the_game = Game(WALLS)
+    the_game = Game(walls_w_hosp)
     last_time_stamp = time.time()
     t_minus = 0.1
     while True:
@@ -181,6 +190,7 @@ if __name__ == "__main__":
         last_time_stamp = time.time()
         if t_minus < 0:
             the_game.draw_board()
+            print(the_game.tanks[0].hp)
             t_minus = 0.1
 
 

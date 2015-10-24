@@ -62,7 +62,9 @@ class Tank:
 
     def heal(self,rate,dt):
         """ heals the tank if its standing on the hospital """
-        self.hp 
+        self.hp += rate*dt
+        if self.hp > MAX_TANK_HP:
+            self.hp = MAX_TANK_HP
 
     def move(self,dt):
         """ updates the position of the tank"""
