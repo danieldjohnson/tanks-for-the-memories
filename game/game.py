@@ -36,6 +36,7 @@ class Game:
         new_time = time.time()
 
         dt = self.last_time_stamp - new_time
+        self.last_time_stamp = new_time
 
         # if we've reached the next turn, run up until the turn
         # then do the turn
@@ -154,9 +155,14 @@ class Game:
 if __name__ == "__main__":
 
     the_game = Game(WALLS)
+    last_time_stamp = time.time()
+    t_minus = 0.5
     while True:
         the_game.update()
-        the_game.draw_board()
+        t_minus -= (time.time() - last_time_stamp)
+        if t_minus < 0:
+            the_game.draw_board()
+        t_minus = 0.5
 
 
 
