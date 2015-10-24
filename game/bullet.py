@@ -5,15 +5,19 @@
 #
 
 import math
+import copy
+from constants import *
 
 class Bullet:
 
-    def __init__(self, x_pos, y_pos, x_vel, y_vel):
+    def __init__(self, ID, x_pos, y_pos, x_vel, y_vel):
+
+        self.ID = ID
 
         self.x_pos = x_pos
         self.y_pos = y_pos
 
-        speed = math.sqrt(self.x_vel**2 + self.y_vel**2)
+        speed = math.sqrt(x_vel**2 + y_vel**2)
         self.x_vel = x_vel*BULLET_SPEED/speed 
         self.y_vel = y_vel*BULLET_SPEED/speed
 
@@ -24,8 +28,8 @@ class Bullet:
 
     def get_pixel_pos(self):
         """ rounds the x and y positions to get the relevant pixel """
-        x = round(self.x_pos)
-        y = round(self.y_pos)
+        x = round(copy.deepcopy(self.x_pos))
+        y = round(copy.deepcopy(self.y_pos))
         return [int(x),int(y)]
 
     

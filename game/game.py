@@ -33,9 +33,10 @@ class Game:
 
     def update(self):
         """ update everything and deal with turns """
+
         new_time = time.time()
 
-        dt = self.last_time_stamp - new_time
+        dt = new_time - self.last_time_stamp
         self.last_time_stamp = new_time
 
         # if we've reached the next turn, run up until the turn
@@ -48,13 +49,16 @@ class Game:
             # take the turns! if the tanks shoot, add them to the list
             tank_coords = []
             for t in self.tanks:
-                tank_coords += [[t.ID,t.x_pos,t.y_pos]]
+                if t:
+                    tank_coords += [[t.ID,t.x_pos,t.y_pos]]
             for t in self.tanks:
-                bullet = t.take_turn(tank_coords)
-                if bullet:
-                    self.bullets += [bullet]
+                if t:
+                    bullet = t.take_turn(tank_coords)
+                    if bullet:
+                        self.bullets += [bullet]
 
             self.real_time_update(dt - self.t_minus)
+            self.t_minus = TURN_RATE
 
         # otherwise just run the whole time
         else:
@@ -64,7 +68,7 @@ class Game:
     def real_time_update(self, dt):
         """ update positions, kill things, in real time
             ASSUMES THAT self.t_minus >= dt"""
-
+        self.t_minus -= dt
         self.board = copy.deepcopy(self.perma_board)
 
         # bullets move first thus if they get shot they can escape their mama tank
@@ -78,57 +82,65 @@ class Game:
             
             # kill the bullet if it hits a wall
             if (x < 0) or (y < 0) or (x > 63) or (y > 63):
-                bullets.remove(b)
+                self.bullets.remove(b)
             elif (self.board[x][y] == WALL):
-                bullets.remove(b)
+                self.bullets.remove(b)
             else:
                 self.board[x][y] = BULLET
 
         # then tanks move
         for i in range(len(self.tanks)):
+
             t = self.tanks[i]
 
-            # move the tank
-            t.move(dt)
+            if t:
+                # move the tank
+                t.move(dt)
 
-            # check to see if the tank hits a wall
-            positions = t.get_pixel_pos() # <-- actually 9 points
-            for p in positions:
-                x = p[0]
-                y = p[1]
-                # if you hit a wall or go off the edge of the screen, don't move
-                if (self.board[x][y] == WALL) or (x < 0) or (y < 0) or (x > 63) or (y > 63):
-                    t.move(-1.0*dt)
-                    break
+                # check to see if the tank hits a wall
+                positions = t.get_pixel_pos() # <-- actually 9 points
+                for p in positions:
+                    x = p[0]
+                    y = p[1]
+                    # if you hit a wall or go off the edge of the screen, don't move
+                    if (self.board[x][y] == WALL) or (x < 0) or (y < 0) or (x > 63) or (y > 63):
+                        t.move(-1.0*dt)
+                        break
 
-            # update the pixels on the board
-            positions = t.get_pixel_pos() # <-- actually 9 points
-            for p in positions:
-                x = p[0]
-                y = p[1]
-                # if you hit a bullet, find the bullet, kill it, take damage
-                if (self.board[x][y] == BULLET):
-                    for b in self.bullets:
-                        b_pos = b.get_pixel_pos()
-                        b_x = b_pos[0]
-                        b_y = b_pos[1]
+                # update the pixels on the board
+                positions = t.get_pixel_pos() # <-- actually 9 points
+                for p in positions:
+                    x = p[0]
+                    y = p[1]
+                    # if you hit a bullet, find the bullet, kill it, take damage
+                    if (self.board[x][y] == BULLET) and not t.is_dead():
+                        for b in self.bullets:
+                            b_pos = b.get_pixel_pos()
+                            b_x = b_pos[0]
+                            b_y = b_pos[1]
 
-                        if (x==b_x) and (y==b_y):
-                            t.damage(BULLET_DM)
-                            if t.is_dead():
-                                tanks.remove(t)
-                                break
-                            t.damage_IDs += [b.ID]
-                            bullets.remove(b)
-                # if you're on the hospital, heal yourself
-                elif (self.board[x][y] == HOSPITAL) and (t.recently_healed == False):
-                    t.heal(HOSPITAL_RATE, dt)
-                    t.recently_healed = True
-                # finally set the pixel to be a tank
-                self.board[x][y] = i
+                            if (x==b_x) and (y==b_y):
+                                t.damage(BULLET_DM)
+                                t.damage_IDs += [b.ID]
+                                self.bullets.remove(b)
+                                if t.is_dead():
+                                    self.tanks[i] = None
+                                    break
+                    # if you're on the hospital, heal yourself
+                    elif (self.board[x][y] == HOSPITAL) and (t.recently_healed == False):
+                        t.heal(HOSPITAL_RATE, dt)
+                        t.recently_healed = True
+                    # finally set the pixel to be a tank
+                    self.board[x][y] = i
 
-            # once the tank is done moving, reset so it can be healed next update
-            t.recently_healed = False
+                # once the tank is done moving, reset so it can be healed next update
+                t.recently_healed = False
+
+                # if t died, reset any pixels that were written before the tank died
+                if t.is_dead():
+                    for p in positions:
+                        if self.board[x][y] == i:
+                            self.board[x][y] = EMPTY
 
 
     # DRAWING THINGS
@@ -155,21 +167,21 @@ class Game:
                       "ais/test_3.py", 
                       copy.deepcopy(self.perma_board),
                       42,5)
-        return [tank_1,tank_2,tank_3]
+        return [tank_1,tank_2,tank_3,None,None,None,None,None,None,None,None]
 
 
 if __name__ == "__main__":
 
     the_game = Game(WALLS)
     last_time_stamp = time.time()
-    t_minus = 2
+    t_minus = 0.1
     while True:
         the_game.update()
         t_minus -= (time.time() - last_time_stamp)
         last_time_stamp = time.time()
         if t_minus < 0:
             the_game.draw_board()
-            t_minus = 2
+            t_minus = 0.1
 
 
 

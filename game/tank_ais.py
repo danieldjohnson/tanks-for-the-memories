@@ -88,13 +88,15 @@ class AIManager(object):
 
         except BaseException:
             self.log(self.fix_sandbox_exception())
-            action = ("pass",)
+            action = [[0,0],False,[0,0]]
 
         # Verify desired move
         if action is None:
-            return ("pass",)
-        elif action == ("pass",) or (action[0] == "move" and isinstance(action[1], Number)):
-            return action
+            return [[0,0],False,[0,0]]
+        elif isinstance(action,list):
+            if isinstance(action[0],list) and isinstance(action[1],bool) and isinstance(action[2],list):
+                if len(action[0]) >= 2 and len(action[2]) >= 2:
+                    return action
         else:
             self.log("Invalid action {}".format(action))
-            return ("pass",)
+            return [[0,0],False,[0,0]]

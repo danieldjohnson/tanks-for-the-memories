@@ -4,6 +4,8 @@
 # MuddHacks 2015
 #
 
+import math
+from constants import *
 from tank_ais import AIManager
 from bullet import Bullet
 
@@ -29,7 +31,7 @@ class Tank:
 
     def take_turn(self, tank_coords):
         state = [tank_coords, self.hp, self.ammo, [self.x_pos, self.y_pos], self.damage_IDs]
-        turn_info = AIManager.takeTurn(state)
+        turn_info = self.AI.takeTurn(state)
 
         # set the tanks speed
         new_x_vel = turn_info[0][0]
@@ -48,7 +50,7 @@ class Tank:
             b_y_vel = turn_info[2][1]
             b_x_pos = self.x_pos + b_x_vel*MAX_TANK_RADIUS
             b_y_pos = self.y_pos + b_y_vel*MAX_TANK_RADIUS
-            return Bullet(b_x_pos,b_y_pos,b_x_vel,b_y_vel)
+            return Bullet(self.ID,b_x_pos,b_y_pos,b_x_vel,b_y_vel)
 
     def is_dead(self):
         """ tells you if the tank is dead """

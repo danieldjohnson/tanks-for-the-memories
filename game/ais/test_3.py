@@ -30,7 +30,7 @@ class TankAI:
         # do nothing
         pass
 
-    def take_turn(self,state):
+    def takeTurn(self,state):
         #[tank_coords, hp, ammo, [x_pos, y_pos], aggressors] = state
         x_vel = 0 # movement direction
         y_vel = 10
