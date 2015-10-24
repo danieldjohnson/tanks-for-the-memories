@@ -42,10 +42,10 @@ class Tank:
 		self.y_vel = new_y_vel
 
 		# make a bullet if necessary
-		if len(turn_info) > 1 and self.ammo > 0:
+		if turn_info[1] and self.ammo > 0:
 			self.ammo -= 1
-			b_x_vel = turn_info[1][0]
-			b_y_vel = turn_info[1][1]
+			b_x_vel = turn_info[2][0]
+			b_y_vel = turn_info[2][1]
 			b_x_pos = self.x_pos + b_x_vel*MAX_TANK_RADIUS
 			b_y_pos = self.y_pos + b_y_vel*MAX_TANK_RADIUS
 			return Bullet(b_x_pos,b_y_pos,b_x_vel,b_y_vel)
