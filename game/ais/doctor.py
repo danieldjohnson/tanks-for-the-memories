@@ -50,8 +50,63 @@ class TankAI:
         S = self.get_S(x_pos,y_pos)
 
         hosp_info = self.detect_hosp(x_pos,y_pos)
-        if len(hosp_info) > 0:
-            return self.get_return(hosp_info,tank_coords,x_pos,y_pos)
+        if NEWS[0] or NEWS[1] or NEWS[2] or NEWS[3]:
+            if self.state == "begin":
+                if not NEWS[0]:
+                    return self.get_return(self.go_north,tank_coords,x_pos,y_pos)
+                else:
+                    self.state = "east"
+                    return self.get_return(self.no_move,tank_coords,x_pos,y_pos)
+            elif self.state == "north":
+                if not NEWS[2]:
+                    self.state = "west"
+                    return self.get_return(self.go_west,tank_coords,x_pos,y_pos)
+                elif not NEWS[0]:
+                    return self.get_return(self.go_north,tank_coords,x_pos,y_pos)
+                elif not NEWS[1]:
+                    self.state = "east"
+                    return self.get_return(self.go_east,tank_coords,x_pos,y_pos)
+                else:
+                    self.state = "south"
+                    return self.get_return(self.go_south,tank_coords,x_pos,y_pos)
+
+            elif self.state == "east":
+                if not NEWS[0]:
+                    self.state = "north"
+                    return self.get_return(self.go_north,tank_coords,x_pos,y_pos)
+                elif not E:
+                    return self.get_return(self.go_east,tank_coords,x_pos,y_pos)
+                elif not S:
+                    self.state = "south"
+                    return self.get_return(self.go_south,tank_coords,x_pos,y_pos)
+                else:
+                    self.state = "west"
+                    return self.get_return(self.go_west,tank_coords,x_pos,y_pos)
+            elif self.state == "west":
+                if not S:
+                    self.state = "south"
+                    return self.get_return(self.go_south,tank_coords,x_pos,y_pos)
+                elif not W:
+                    return self.get_return(self.go_west,tank_coords,x_pos,y_pos)
+                elif not N:
+                    self.state = "north"
+                    return self.get_return(self.go_north,tank_coords,x_pos,y_pos)
+                else:
+                    self.state = "east"
+                    return self.get_return(self.go_east,tank_coords,x_pos,y_pos)
+            elif self.state == "south":
+                if not E:
+                    self.state = "east"
+                    return self.get_return(self.go_east,tank_coords,x_pos,y_pos)            
+                elif not S:
+                    return self.get_return(self.go_south,tank_coords,x_pos,y_pos)
+                elif not W:
+                    self.state = "west"
+                    return self.get_return(self.go_west,tank_coords,x_pos,y_pos)            
+                else:
+                    self.state = "north"
+                    return self.get_return(self.go_north,tank_coords,x_pos,y_pos)
+
 
         if self.state == "begin":
             if not N:
@@ -119,11 +174,12 @@ class TankAI:
 
     def detect_hosp(self,x_pos,y_pos):
         x = x_pos
+        NEWS = [False,False,False,False]
         while(x <= 63):
             if self.board[y_pos][x] == WALL:
                 break
             elif self.board[y_pos][x] == HOSPITAL:
-                return self.go_east
+                NEWS[1] = True
             else:
                 x += 1
         x = x_pos
@@ -131,7 +187,7 @@ class TankAI:
             if self.board[y_pos][x] == WALL:
                 break
             elif self.board[y_pos][x] == HOSPITAL:
-                return self.go_west
+                NEWS[2] = True
             else:
                 x -= 1
 
@@ -140,7 +196,7 @@ class TankAI:
             if self.board[y][x_pos] == WALL:
                 break
             elif self.board[y][x_pos] == HOSPITAL:
-                return self.go_south
+                NEWS[3] = True
             else:
                 y += 1
         y = y_pos
@@ -148,10 +204,10 @@ class TankAI:
             if self.board[y][x_pos] == WALL:
                 break
             elif self.board[y][x_pos] == HOSPITAL:
-                return self.go_north
+                NEWS[0] = True
             else:
                 y -= 1
-        return []
+        return NEWS
 
 
     def get_N(self,x_pos,y_pos):

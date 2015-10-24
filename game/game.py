@@ -161,7 +161,7 @@ class Game:
                     #
                     eye_x = int(round(t.x_pos))
                     eye_y = int(round(t.y_pos))
-                    elif t_angle_scaled == 0:
+                    if t_angle_scaled == 0:
                         eye_x -= 1
                     elif t_angle_scaled == 1:
                         eye_x -= 1
@@ -171,7 +171,7 @@ class Game:
                     elif t_angle_scaled == 3:
                         eye_y -= 1
                         eye_x += 1
-                    if t_angle_scaled == 4:
+                    elif t_angle_scaled == 4:
                         eye_x += 1
                     elif t_angle_scaled == 5:
                         eye_x += 1
