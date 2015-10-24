@@ -24,16 +24,27 @@
 #   tx, ty        : tank's turret vector
 #   shoot         : whether the tank should shoot (in the direction of its turret) on the current turn
 
+
 class TankAI:
 
     def __init__(self,init_state):
         # do nothing
 
-    def do_turn(self,state):
-        #[tank_coords, hp, ammo, [x_pos, y_pos], aggressors] = state
+    # def do_turn(self,state):
+    #     #[tank_coords, hp, ammo, [x_pos, y_pos], aggressors] = state
+    #     x_vel = 0 # movement direction
+    #     y_vel = 0
+    #     tx    = 0 # turret direction
+    #     ty    = 0
+    #     shoot = False
+    #     return [[x_vel, y_vel], shoot, [tx, ty]]
+
+    def do_turn (state):
+        [tank_coords, hp, ammo, [x_pos, y_pos], aggressors] = state
         x_vel = 0 # movement direction
         y_vel = 0
         tx    = 0 # turret direction
         ty    = 0
         shoot = False
         return [[x_vel, y_vel], shoot, [tx, ty]]
+
