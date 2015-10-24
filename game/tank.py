@@ -9,12 +9,12 @@ from bullet import Bullet
 
 class Tank:
 
-	def __init__(self, ID, AIpath, perma_board, x_pos, y_pos, 
+	def __init__(self, ID, AIpath, perma_board_copy, x_pos, y_pos, 
 		               x_vel = 0,
 					   y_vel = 0,
 		 			   hp    = 30,
-		               ammo  = 100):
-		self.AI = AIManager(AIpath, copy.deepcopy(perma_board))
+		               ammo  = 100000):
+		self.AI = AIManager(AIpath, perma_board_copy)
 		self.ID    = ID
 		self.x_pos = x_pos
 		self.y_pos = y_pos
@@ -31,6 +31,7 @@ class Tank:
 		state = [tank_coords, self.hp, self.ammo, [self.x_pos, self.y_pos], self.damage_IDs]
 		turn_info = AIManager.takeTurn(state)
 
+		# set the tanks speed
 		new_x_vel = turn_info[0][0]
 		new_y_vel = turn_info[0][1]
 		speed = math.sqrt(new_x_vel**2 + new_y_vel**2)
@@ -40,11 +41,14 @@ class Tank:
 		self.x_vel = new_x_vel
 		self.y_vel = new_y_vel
 
-		b_x_pos = self.x_pos + 
-		b_x_vel = 
-		b_y_vel
-
-		return 
+		# make a bullet if necessary
+		if len(turn_info) > 1 and self.ammo > 0:
+			self.ammo -= 1
+			b_x_vel = turn_info[1][0]
+			b_y_vel = turn_info[1][1]
+			b_x_pos = self.x_pos + b_x_vel*MAX_TANK_RADIUS
+			b_y_pos = self.y_pos + b_y_vel*MAX_TANK_RADIUS
+			return Bullet(b_x_pos,b_y_pos,b_x_vel,b_y_vel)
 
 	def is_dead():
 		""" tells you if the tank is dead """

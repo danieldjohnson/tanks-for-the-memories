@@ -24,7 +24,7 @@ class Game:
 			self.ghost_board += [[0]*64]
 
 		self.board       = copy.deepcopy(self.perma_board)
-		self.tanks       = []
+		self.tanks       = load_test_tanks()
 		self.bullets     = []
 		self.t_minus     = TURN_RATE
 		self.last_time_stamp = time.time()
@@ -47,8 +47,11 @@ class Game:
 			real_time_update(self.t_minus)
 
 			# take the turns! if the tanks shoot, add them to the list
+			tank_coords = []
 			for t in self.tanks:
-				bullet = t.take_turn()
+				tank_coords += [[t.x_pos,t.y_pos]]
+			for t in self.tanks:
+				bullet = t.take_turn(tank_coords)
 				if bullet:
 					self.bullets += [bullet]
 
@@ -134,4 +137,16 @@ class Game:
 			for b in a:
 				print DEBUG_STRINGS[b],
 			print "\n"
+
+	# TESTING THINGS
+
+	def load_test_tanks():
+
+		tank_1 = Tank("penis", 
+			          "game/ais/test_1", 
+			          copy.deepcopy(self.perma_board),
+			          32,32)
+		#tank_2
+		#tank_3
+		return [tank_1]
 
