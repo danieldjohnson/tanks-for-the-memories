@@ -6,15 +6,13 @@ var S = require('string');
 var flash = require('connect-flash');
 var fs = require('fs');
 var child_process = require('child_process');
+var Datastore = require('nedb')
 
 var credentials = require('./credentials');
 
 var app = express();
 
-
-
-var user_mapping = {};
-
+var userdb = new Datastore({ filename: '../data/usrdb.db', autoload: true });
 
 passport.use(new GoogleStrategy({
     clientID: credentials.GOOGLE_CONSUMER_KEY,
@@ -27,24 +25,30 @@ passport.use(new GoogleStrategy({
         if(!S(profile.emails[0].value).endsWith('@g.hmc.edu')){
             return done(null, false, { message: 'You need to sign up with a HMC account!'});
         }
-        if(!user_mapping[profile.id]){
-            user_mapping[profile.id] = {
-                profile_id: profile.id,
-                name: profile.displayName,
-                email: profile.emails[0].value,
-                student_id_num: null,
+
+        userdb.findOne({ profile_id: profile.id }, function(err, doc){
+            if(err)
+                return done(err, null);
+            if(doc) {
+                return done(null, doc);
+            } else {
+                userdb.insert({
+                    profile_id: profile.id,
+                    name: profile.displayName,
+                    email: profile.emails[0].value,
+                    student_id_num: null,
+                }, done);
             }
-        }
-        return done(null, user_mapping[profile.id]);
+        });     
     }
 ));
 
 passport.serializeUser(function(user, done) {
-    done(null, user.profile_id);
+    done(null, user._id);
 });
 
-passport.deserializeUser(function(profile_id, done) {
-    done(null, user_mapping[profile_id]);
+passport.deserializeUser(function(_id, done) {
+    userdb.findOne({ _id: _id }, done);
 });
 
 var ensureUserLoggedIn = function (req, res, next) {
@@ -139,7 +143,16 @@ app.post('/account/setup',
     function (req, res) {
         if(/^\d{8}$/g.test(req.body.idnum)){
             req.user.student_id_num = req.body.idnum;
-            res.redirect('/account/info');
+            userdb.update({ _id: req.user._id }, {$set:{ student_id_num: req.body.idnum }},
+            function(err, numReplaced, newDoc){
+                if(err){
+                    console.log(err);
+                    res.status(500).send("Bad!");
+                    return
+                }
+                req.user = newDoc;
+                res.redirect('/account/info');
+            });
         } else {
             // Bad ID number
             res.redirect('/account/setup');
