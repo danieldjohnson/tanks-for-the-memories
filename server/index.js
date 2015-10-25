@@ -142,16 +142,28 @@ app.post('/account/setup',
     ensureUserNotSetUp,
     function (req, res) {
         if(/^\d{8}$/g.test(req.body.idnum)){
-            req.user.student_id_num = req.body.idnum;
-            userdb.update({ _id: req.user._id }, {$set:{ student_id_num: req.body.idnum }},
-            function(err, numReplaced, newDoc){
+            userdb.findOne({ student_id_num: req.body.idnum }, function(err, doc){
                 if(err){
                     console.log(err);
                     res.status(500).send("Bad!");
                     return
                 }
-                req.user = newDoc;
-                res.redirect('/account/info');
+                if(doc) {
+                    // User with this id number already exists!
+                    req.flash('error', 'Someone else already registered that ID number!');
+                    res.redirect('/account/setup');
+                } else {
+                    userdb.update({ _id: req.user._id }, {$set:{ student_id_num: req.body.idnum }},
+                    function(err, numReplaced, newDoc){
+                        if(err){
+                            console.log(err);
+                            res.status(500).send("Bad!");
+                            return
+                        }
+                        req.user = newDoc;
+                        res.redirect('/account/info');
+                    });
+                }
             });
         } else {
             // Bad ID number
