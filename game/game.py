@@ -60,10 +60,12 @@ class Game:
             for newid in self.pending_tank_ids:
                 for i in range(len(self.tanks)):
                     if self.tanks[i] is not None and self.tanks[i].ID == newid:
-                        # TODO: Update the tank
+                        self.tanks[i].reload_ai()
                         break
                 else:
-                    # Tank wasn't found! Add it
+                    # Tank wasn't found! Add it if there is an AI
+                    if not os.path.isfile("../data/"+newid+".py"):
+                        break
                     for i in range(len(self.tanks)):
                         if self.tanks[i] is None:
                             # Found a space for our tank
