@@ -167,12 +167,17 @@ class Game:
                             b_y = b_pos[1]
 
                             if (x==b_x) and (y==b_y):
-                                t.damage(BULLET_DM)
-                                t.damage_IDs += [b.ID]
+                                bullet_id = b.ID
                                 self.bullets.remove(b)
+                                t.damage(BULLET_DM)
+                                t.damage_IDs += [bullet_id]
                                 if t.is_dead():
                                     self.tanks[i] = None
+                                    for q in self.tanks:
+                                        if q != None and q.ID == bullet_id:
+                                            q.score += 1
                                     break
+
                     # if you're on the hospital, heal yourself
                     elif (self.board[y][x] == HOSPITAL) and (not t.recently_healed):
                         t.heal(HOSPITAL_RATE, dt)
@@ -285,17 +290,17 @@ class Game:
                       "ais/test_3.py",
                       copy.deepcopy(self.perma_board),
                       5,12)
-        # doctor = Tank("doc",
-        #               "ais/doctor.py",
-        #               copy.deepcopy(self.perma_board),
-        #               5,45)
+        doctor = Tank("doc",
+                      "ais/doctor.py",
+                      copy.deepcopy(self.perma_board),
+                      5,4)
         # hugger = Tank("hug",
         #               "ais/wall_hugger.py",
         #               copy.deepcopy(self.perma_board),
         #               19,10)
         #
         #               doctor,hugger,
-        return [tank_1,tank_2,tank_3,None,None,None,None,None,None,None,None]
+        return [tank_1,tank_2,tank_3,doctor,None,None,None,None,None,None,None]
 
 
 if __name__ == "__main__":

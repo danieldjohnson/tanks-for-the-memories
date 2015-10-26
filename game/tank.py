@@ -14,7 +14,7 @@ class Tank:
     def __init__(self, ID, AIpath, perma_board_copy, x_pos, y_pos,
                        x_vel = 0,
                        y_vel = 0,
-                       hp    = 30,
+                       hp    = MAX_TANK_HP,
                        ammo  = 100000):
         self.perma_board_copy = perma_board_copy
         self.AIpath = AIpath
@@ -24,6 +24,7 @@ class Tank:
         self.y_pos = y_pos
         self.x_vel = x_vel
         self.y_vel = y_vel
+        self.score = 0
 
         self.hp = hp
         self.ammo = ammo
@@ -124,4 +125,4 @@ class Tank:
         rhp = int(math.ceil(self.hp))
         healthbar = "#"*rhp + "."*(MAX_TANK_HP - rhp)
         with open(logfile, 'w') as f:
-            f.write("Health: [{}] {}/{}\nAmmo: {}\n".format(healthbar, self.hp, MAX_TANK_HP, self.ammo))
+            f.write("Health: [{}] {}/{}\nAmmo: {}\nScore: {}".format(healthbar, self.hp, MAX_TANK_HP, self.ammo, self.score))
