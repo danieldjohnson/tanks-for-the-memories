@@ -11,7 +11,7 @@ from bullet import Bullet
 
 class Tank:
 
-    def __init__(self, ID, AIpath, perma_board_copy, x_pos, y_pos, 
+    def __init__(self, ID, AIpath, perma_board_copy, x_pos, y_pos,
                        x_vel = 0,
                        y_vel = 0,
                        hp    = 30,
@@ -81,7 +81,7 @@ class Tank:
         return [int(x),int(y)]
 
     def get_pixel_pos(self):
-        """ returns a list of points in the order       
+        """ returns a list of points in the order
 
                      -y
                       |
@@ -90,9 +90,9 @@ class Tank:
                      +y
 
 
-                    0 1 2  
-                    3 4 5  
-                    6 7 8   """ 
+                    0 1 2
+                    3 4 5
+                    6 7 8   """
 
         c = self.get_center()
 

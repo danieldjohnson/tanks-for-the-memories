@@ -4,6 +4,7 @@
 # MuddHacks 2015
 #
 
+import curses
 import copy
 import time
 import os
@@ -238,10 +239,23 @@ class Game:
 
     def draw_board(self):
         if OUTPUT_STDOUT:
-            for a in self.board:
-                for b in a:
-                    print DEBUG_STRINGS[b],
-                print ""
+            win.refresh()
+            for i in range (0,len(self.board)):
+                for j in range (0,len(self.board[0])):
+                    n = self.board[i][j]
+                    if n == 10 or n == 15:
+                        color = 2
+                    elif n == 11:
+                        color = 2
+                    elif n == 12:
+                        color = 3
+                    elif n == 13:
+                        color = 4
+                    else:
+                        color = 5
+
+                    win.addch(i,j,DEBUG_STRINGS[n],curses.color_pair(color))
+
         if OUTPUT_LED:
             bytes_to_write = [0 for i in range(3*32*64)]
             for row in range(32/2):
@@ -289,6 +303,14 @@ if __name__ == "__main__":
     the_game = Game(walls_w_hosp_32)
     last_time_stamp = time.time()
     t_minus = 0.1
+    stdscr = curses.initscr()
+    curses.start_color()
+    win = curses.newwin(33,65,0,0)
+    curses.init_pair(1, curses.COLOR_RED, curses.COLOR_WHITE) #empty/eye
+    curses.init_pair(2, curses.COLOR_BLUE, curses.COLOR_WHITE)  #wall
+    curses.init_pair(3, curses.COLOR_MAGENTA, curses.COLOR_WHITE) #hospital
+    curses.init_pair(4, curses.COLOR_CYAN, curses.COLOR_WHITE)  #bullet
+    curses.init_pair(5, curses.COLOR_RED, curses.COLOR_WHITE)  #tank
     buffered_input = ""
     while True:
         if select.select([sys.stdin,],[],[],0.0) == ([sys.stdin],[],[]):
