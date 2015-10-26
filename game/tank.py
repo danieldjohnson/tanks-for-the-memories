@@ -52,9 +52,10 @@ class Tank:
             b_x_vel = turn_info[2][0]
             b_y_vel = turn_info[2][1]
             speed = math.sqrt(b_x_vel**2 + b_y_vel**2)
-            b_x_pos = self.x_pos + b_x_vel*MAX_TANK_RADIUS/speed
-            b_y_pos = self.y_pos + b_y_vel*MAX_TANK_RADIUS/speed
-            return Bullet(self.ID,b_x_pos,b_y_pos,b_x_vel,b_y_vel)
+            if speed != 0:
+                b_x_pos = self.x_pos + b_x_vel*MAX_TANK_RADIUS/speed
+                b_y_pos = self.y_pos + b_y_vel*MAX_TANK_RADIUS/speed
+                return Bullet(self.ID,b_x_pos,b_y_pos,b_x_vel,b_y_vel)
 
     def is_dead(self):
         """ tells you if the tank is dead """
