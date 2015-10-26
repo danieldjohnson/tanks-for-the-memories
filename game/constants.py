@@ -32,6 +32,26 @@ TURN_RATE       = 1    # <-- turns/second
 DEBUG_STRINGS   = ["@","@","@","@","@","@","@","@","@","@"," ","#","H","*","A","o"]
 
 
+def __guarded_setattr__(name, value):
+    raise TypeError("Cannot assign to constants!")
+
+def __guarded_getattr_validate__(name, value):
+    safe_constants = [
+        "EMPTY",
+        "WALL",
+        "HOSPITAL",
+        "MAX_TANK_SPEED",
+        "MAX_TANK_RADIUS",
+        "MAX_TANK_HP",
+        "BULLET_DM",
+        "BULLET_SPEED",
+        "HOSPITAL_RATE",
+        "TURN_RATE",
+    ]
+    if name in safe_constants:
+        return True
+    else:
+        raise TypeError("Cannot assign to constants!")
 
 
 rev_bits_table = [

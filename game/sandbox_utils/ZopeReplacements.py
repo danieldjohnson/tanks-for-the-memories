@@ -14,7 +14,6 @@ class SecurityManager(object):
                         None)
 
         if p is None:
-            print "wrapget", container
             p = getattr(container,
                         '__guarded_getattr_validate__',
                         None)
