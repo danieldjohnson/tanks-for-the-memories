@@ -22,16 +22,23 @@ from tank_ais import SandboxCodeExecutionFailed
 class Game:
 
     def __init__(self, perma_board = []):
-        """ if we want walls we give walls as a list of 2-element lists """
+        """ if we want walls/hospital we give them in perma_board
+            perma_board should be formatted as a 64x64 2D list of pixel values """
 
-        self.perma_board = perma_board # <-- a list of lists of pixel values
+        # the set of things on the board which never change
+        # currently includes HOSPITAL and WALL
+        # formatted as a 64x64 2D list of pixel values
+        self.perma_board = perma_board
         if len(self.perma_board) == 0:
             for i in range(64):
-                self.perma_board += [[10]*64]
+                self.perma_board += [[EMPTY]*64]
 
-        self.ghost_board = [] # <-- a list of lists of pixel values
+        # purely aesthetic features which never interact
+        # includes EYE for instance
+        # formatted as a 64x64 2D list of pixel values
+        self.ghost_board = []
         for i in range(64):
-            self.ghost_board += [[10]*64]
+            self.ghost_board += [[EMPTY]*64]
 
         self.board       = copy.deepcopy(self.perma_board)
         self.tanks       = self.load_test_tanks()
@@ -41,20 +48,26 @@ class Game:
 
         self.pending_tank_ids = []
 
-    # UPDATING THINGS
+
+    # ------ FUNCTIONS TO UPDATE THE GAME -------
 
     def update(self):
         """ update everything and deal with turns """
 
+        # check to see how much time has passed
         new_time = time.time()
-
         dt = new_time - self.last_time_stamp
         self.last_time_stamp = new_time
 
-        # if we've reached the next turn, run up until the turn
+
+        # if we haven't reached the next turn, just update everything
+        if dt < self.t_minus:
+            self.real_time_update(dt)
+
+        # if we HAVE reached the next turn, run up until the turn
         # then do the turn
         # then run the remaining time
-        if dt > self.t_minus:
+        else:
 
             self.real_time_update(self.t_minus)
 
@@ -86,7 +99,8 @@ class Game:
                                 break
             self.pending_tank_ids = []
 
-            # take the turns! if the tanks shoot, add them to the list
+            # take the turns!
+            # if the tanks shoot, add their bullets to the bulletlist
             tank_coords = []
             for t in self.tanks:
                 if t:
@@ -103,20 +117,22 @@ class Game:
             self.real_time_update(dt - self.t_minus)
             self.t_minus = TURN_RATE
 
-        # otherwise just run the whole time
-        else:
-            self.real_time_update(dt)
-
 
     def real_time_update(self, dt):
         """ update positions, kill things, in real time
-            ASSUMES THAT self.t_minus >= dt"""
+            ASSUMES THAT self.t_minus >= dt
+            that is, that no turn happens in the middle of dt"""
 
         self.t_minus -= dt
+
+        # copy the permanent features before we add on tanks,bullets,etc
         self.board = copy.deepcopy(self.perma_board)
+
+        # CURRENTLY WE CLEAR THE GHOST_BOARD EVERY FRAME
+        # THIS MAY CHANGE IN THE FUTURE AS WE ADD MORE ANIMATIONS
         self.ghost_board = []
         for i in range(64):
-            self.ghost_board += [[10]*64]
+            self.ghost_board += [[EMPTY]*64]
 
         # bullets move first thus if they get shot they can escape their mama tank
         for b in self.bullets:
@@ -140,12 +156,13 @@ class Game:
 
             t = self.tanks[i]
 
+            # some of our array entries may be null
             if t:
-                # move the tank
+
                 t.move(dt)
 
                 # check to see if the tank hits a wall
-                positions = t.get_pixel_pos() # <-- actually 9 points
+                positions = t.get_pixel_pos() # <-- actually 9 positions
                 for p in positions:
                     x = p[0]
                     y = p[1]
@@ -155,11 +172,12 @@ class Game:
                         break
 
                 # update the pixels on the board
-                positions = t.get_pixel_pos() # <-- actually 9 points
+                positions = t.get_pixel_pos() # <-- actually 9 positions
                 for p in positions:
                     x = p[0]
                     y = p[1]
-                    # if you hit a bullet, find the bullet, kill it, take damage
+                    # if you hit a bullet:
+                    #   find the bullet, kill it, take damage, record your aggressor
                     if (self.board[y][x] == BULLET) and not t.is_dead():
                         for b in self.bullets:
                             b_pos = b.get_pixel_pos()
@@ -193,18 +211,17 @@ class Game:
                     for p in positions:
                         if self.board[y][x] == i:
                             self.board[y][x] = EMPTY
+
                 # otherwise add the "eye" of the tank to the ghost_board
+                # according to the direction in the map below, which 
+                # corresponds to the angle the tank is pointing
+                #
+                #     1 2 3
+                #     0 x 4
+                #     7 6 5
+                #
                 else:
                     t_angle_scaled = (int(round(math.atan2(t.y_vel,t.x_vel)*8/(2*math.pi)))+4)%8
-                    #
-                    # adds a ghost eye acording to the direction according to the map
-                    #
-                    #     1 2 3
-                    #     0 x 4
-                    #     7 6 5
-                    #
-                    # corresponding to the normal geometric angle
-                    #
                     eye_x = int(round(t.x_pos))
                     eye_y = int(round(t.y_pos))
                     if t_angle_scaled == 0:
@@ -240,9 +257,13 @@ class Game:
 
 
 
-    # DRAWING THINGS
+    # ------ FUNCTIONS TO DRAW THE GAME -------
+
+
 
     def draw_board(self):
+
+        # draw the board to STDOUT
         if OUTPUT_STDOUT:
             win.refresh()
             for i in range (0,len(self.board)):
@@ -261,6 +282,7 @@ class Game:
 
                     win.addch(i,j,DEBUG_STRINGS[n],curses.color_pair(color))
 
+        # draw the board to the LED matrix
         if OUTPUT_LED:
             bytes_to_write = [0 for i in range(3*32*64)]
             for row in range(32/2):
@@ -274,7 +296,7 @@ class Game:
             with open("/dev/spidev0.1") as spifile:
                 spifile.write(bytearray(bytes_to_write))
 
-    # TESTING THINGS
+    # ------ MISCELLANEOUS THINGS THE GAME NEEDS TO DO -------
 
     def load_test_tanks(self):
 
@@ -291,7 +313,7 @@ class Game:
                       copy.deepcopy(self.perma_board),
                       5,12)
         doctor = Tank("doc",
-                      "ais/wall_hugger.py",
+                      "ais/doctor.py",
                       copy.deepcopy(self.perma_board),
                       5,4)
         # hugger = Tank("hug",
