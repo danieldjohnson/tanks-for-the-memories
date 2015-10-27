@@ -13,6 +13,7 @@ import binascii
 import sys
 import random
 import select
+import hashlib
 
 from tank import Tank
 from constants import *
@@ -303,6 +304,11 @@ class Game:
         return [tank_1,tank_2,tank_3,None,None,None,None,None,None,None,None]
 
 
+def preprocess_idnum(idnum):
+    # Hash the id number so that it's not trivial to match students to their
+    # ID numbers
+    return hashlib.sha512(idnum).hexdigest()
+
 if __name__ == "__main__":
 
     the_game = Game(walls_w_hosp)
@@ -320,7 +326,7 @@ if __name__ == "__main__":
     while True:
         if select.select([sys.stdin,],[],[],0.0) == ([sys.stdin],[],[]):
             idnum = sys.stdin.readline()[2:-3]
-            the_game.pending_tank_ids.append(idnum)
+            the_game.pending_tank_ids.append(preprocess_idnum(idnum))
         the_game.update()
         t_minus -= (time.time() - last_time_stamp)
         last_time_stamp = time.time()

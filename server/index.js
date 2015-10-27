@@ -6,7 +6,9 @@ var S = require('string');
 var flash = require('connect-flash');
 var fs = require('fs');
 var child_process = require('child_process');
-var Datastore = require('nedb')
+var Datastore = require('nedb');
+var crypto = require('crypto');
+var shasum = crypto.createHash('sha512');
 
 var credentials = require('./credentials');
 
@@ -36,7 +38,7 @@ passport.use(new GoogleStrategy({
                     profile_id: profile.id,
                     name: profile.displayName,
                     email: profile.emails[0].value,
-                    student_id_num: null,
+                    student_id_num_hashed: null,
                 }, done);
             }
         });     
@@ -60,7 +62,7 @@ var ensureUserLoggedIn = function (req, res, next) {
 }
 
 var ensureUserSetUp = function (req, res, next) {
-    if(!req.user.student_id_num){
+    if(!req.user.student_id_num_hashed){
         res.redirect('/account/setup');
     } else {
         next();
@@ -68,7 +70,7 @@ var ensureUserSetUp = function (req, res, next) {
 };
 
 var ensureUserNotSetUp = function (req, res, next) {
-    if(req.user.student_id_num){
+    if(req.user.student_id_num_hashed){
         res.redirect('/');
     } else {
         next();
@@ -85,14 +87,12 @@ var prepareRender = function (req, res, next) {
             '/edit':'Edit Code',
         }
         res.locals.name = req.user.name;
-        res.locals.idnum = req.user.student_id_num;
     } else {
         res.locals.navbar = {
             '/':'Home',
             '/auth/google':'Login',
         }
-        res.locals.name = "(not logged in)"
-        res.locals.idnum = "????????"
+        res.locals.name = "not logged in"
     }
     next();
 };
@@ -142,7 +142,7 @@ app.post('/account/setup',
     ensureUserNotSetUp,
     function (req, res) {
         if(/^\d{8}$/g.test(req.body.idnum)){
-            userdb.findOne({ student_id_num: req.body.idnum }, function(err, doc){
+            userdb.findOne({ student_id_num_hashed: req.body.idnum }, function(err, doc){
                 if(err){
                     console.log(err);
                     res.status(500).send("Bad!");
@@ -153,7 +153,9 @@ app.post('/account/setup',
                     req.flash('error', 'Someone else already registered that ID number!');
                     res.redirect('/account/setup');
                 } else {
-                    userdb.update({ _id: req.user._id }, {$set:{ student_id_num: req.body.idnum }},
+                    shasum.update(req.body.idnum);
+                    var hashed_idnum = shasum.digest('hex');
+                    userdb.update({ _id: req.user._id }, {$set:{ student_id_num_hashed: hashed_idnum }},
                     function(err, numReplaced, newDoc){
                         if(err){
                             console.log(err);
@@ -206,13 +208,13 @@ app.get('/status',
     ensureUserLoggedIn,
     ensureUserSetUp,
     function (req, res) {
-        get_player_status(req.user.student_id_num, function(err, status){
+        get_player_status(req.user.student_id_num_hashed, function(err, status){
             if (err){
                 console.log(err);
                 res.status(500).send("Bad!");
                 return
             }
-            get_player_log(req.user.student_id_num, function(err, log){
+            get_player_log(req.user.student_id_num_hashed, function(err, log){
                 if (err){
                     console.log(err);
                     res.status(500).send("Bad!");
@@ -240,7 +242,7 @@ app.get('/edit',
     ensureUserLoggedIn,
     ensureUserSetUp,
     function (req, res) {
-        get_aifile_contents(req.user.student_id_num, function(err, contents){
+        get_aifile_contents(req.user.student_id_num_hashed, function(err, contents){
             if (err){
                 console.log(err);
                 res.status(500).send("Bad!");
@@ -254,7 +256,7 @@ app.post('/edit',
     ensureUserLoggedIn,
     ensureUserSetUp,
     function (req, res) {
-        var aifile = '../data/' + req.user.student_id_num + '.py';
+        var aifile = '../data/' + req.user.student_id_num_hashed + '.py';
         fs.writeFile(aifile, req.body.value);
         child_process.execFile('python',['../game/test-compile.py', aifile],{},function(err,stdout,stderr){
             if (err) throw err;
