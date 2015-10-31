@@ -290,7 +290,7 @@ class Game:
                 for col in range(64):
                     bytes_to_write[(row*64+col)*3*2+0] = rev_bits_table[gamma_correction_table[COLORS[self.board[row][col]][0]]]
                     bytes_to_write[(row*64+col)*3*2+1] = rev_bits_table[gamma_correction_table[COLORS[self.board[row][col]][1]]]
-                    bytes_to_write[(row*64+col)*3*2+2] = rev_bits_table[gamma_correction_table[COLORS[self.board[row+16][col]][2]]]
+                    bytes_to_write[(row*64+col)*3*2+2] = rev_bits_table[gamma_correction_table[COLORS[self.board[row][col]][2]]]
                     bytes_to_write[(row*64+col)*3*2+3] = rev_bits_table[gamma_correction_table[COLORS[self.board[row+16][col]][0]]]
                     bytes_to_write[(row*64+col)*3*2+4] = rev_bits_table[gamma_correction_table[COLORS[self.board[row+16][col]][1]]]
                     bytes_to_write[(row*64+col)*3*2+5] = rev_bits_table[gamma_correction_table[COLORS[self.board[row+16][col]][2]]]
