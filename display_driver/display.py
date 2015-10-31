@@ -26,7 +26,7 @@ bitsPerColor = 8
 #    ..., (row 0, column
 #   1's red LSB), ..., (row 1 column 0's red LSB), ....]
 # next_img actually goes 
-def display(clk, dclk, A, B, C, D, R1, B1, G1, R2, B2, G2, latch, OE, img, imgoffset):
+def display(clk, rst, dclk, A, B, C, D, R1, B1, G1, R2, B2, G2, latch, OE, img, imgoffset):
     bpc = bitsPerColor # Alias for shorter lines
 
     @always_comb
@@ -44,57 +44,75 @@ def display(clk, dclk, A, B, C, D, R1, B1, G1, R2, B2, G2, latch, OE, img, imgof
     next_col = Signal(intbv(val=0, min=0, max=width))
     next_colors = Signal(intbv(val=0)[3*bpc*2:])
 
-    @always(clk.posedge)
+    @always(clk.posedge, rst.negedge)
     def disp():
         # Output is always enabled
         OE.next = False
 
-        R1.next = next_colors[1*bpc : 0*bpc] > pwm_ctr
-        G1.next = next_colors[2*bpc : 1*bpc] > pwm_ctr
-        B1.next = next_colors[3*bpc : 2*bpc] > pwm_ctr
-        R2.next = next_colors[4*bpc : 3*bpc] > pwm_ctr
-        G2.next = next_colors[5*bpc : 4*bpc] > pwm_ctr
-        B2.next = next_colors[6*bpc : 5*bpc] > pwm_ctr
-
-        A.next = which_row[0]
-        B.next = which_row[1]
-        C.next = which_row[2]
-        D.next = which_row[3]
-
-        next_colors.next = img[imgoffset + (next_row+1)*width + next_col]
-
-        latch.next = which_col == 63
-        which_col.next = next_col
-        which_row.next = next_row
-
-        if next_col == width-1:
-            next_col.next = 0
-            if next_row == height/2-1:
-                next_row.next = 0
-                if pwm_ctr == pwm_ctr.max - 1:
-                    pwm_ctr.next = 0
-                else:
-                    pwm_ctr.next = pwm_ctr + 1
-            else:
-                next_row.next = next_row + 1
+        if not rst:
+            # Actually do the reset (it's active low)
+            next_row.next = 1
+            next_col.next = 1
+            which_row.next = 0
+            which_col.next = 0
+            pwm_ctr.next = 0
+            #next_colors.next = img[imgoffset + (0+1)*width + 0]
         else:
-            next_col.next = next_col + 1
+
+            R1.next = next_colors[1*bpc : 0*bpc] > pwm_ctr
+            G1.next = next_colors[2*bpc : 1*bpc] > pwm_ctr
+            B1.next = next_colors[3*bpc : 2*bpc] > pwm_ctr
+            R2.next = next_colors[4*bpc : 3*bpc] > pwm_ctr
+            G2.next = next_colors[5*bpc : 4*bpc] > pwm_ctr
+            B2.next = next_colors[6*bpc : 5*bpc] > pwm_ctr
+
+            #next_colors.next = img[imgoffset + (next_row+1)*width + next_col]
+            next_colors.next = img[imgoffset + next_row*width + next_col]
+
+            latch.next = which_col == width-1
+            which_col.next = next_col
+            which_row.next = next_row
+
+            if next_col >= width-1:
+                next_col.next = 0
+
+                A.next = which_row[0]
+                B.next = which_row[1]
+                C.next = which_row[2]
+                D.next = which_row[3]
+
+                if next_row >= height/2-1:
+                    next_row.next = 0
+                    if pwm_ctr >= pwm_ctr.max - 1:
+                        pwm_ctr.next = 0
+                    else:
+                        pwm_ctr.next = pwm_ctr + 1
+                else:
+                    next_row.next = next_row + 1
+            else:
+                next_col.next = next_col + 1
 
     return disp, do_dclk
 
-def read_spi(mosi, sclk, rxdata, minor_size, major_size):
+def read_spi(rst, mosi, sclk, rxdata, minor_size, major_size):
     minor_idx = Signal(intbv(val=0, min=0, max=minor_size))
     major_idx = Signal(intbv(val=0, min=0, max=major_size))
 
     buf = Signal(intbv(0)[minor_size-1:])
-    @always(sclk.posedge)
+    @always(sclk.posedge, rst.negedge)
     def RX():
-        if minor_idx == minor_size-1:
-            rxdata[major_idx].next = concat(mosi, buf)
-            major_idx.next = major_idx+1
+        if not rst:
+            # Actually reset because it's active low
+            minor_idx.next = 0
+            major_idx.next = 0
         else:
-            buf[minor_idx].next = mosi
-            minor_idx.next = minor_idx+1
+            if minor_idx >= minor_size-1:
+                rxdata[major_idx].next = concat(mosi, buf)
+                major_idx.next = major_idx+1
+                minor_idx.next = 0
+            else:
+                buf[minor_idx].next = mosi
+                minor_idx.next = minor_idx+1
     return RX
 
 def clk_driver(clk):
@@ -120,18 +138,20 @@ def clockDivider(clk, slowclk, divRate = 0x400000):
 
     return divide
 
-def main(clk, mosi, sclk,
+def main(inclk, rst, mosi, sclk,
         dclka, Aa, Ba, Ca, Da, R1a, B1a, G1a, R2a, B2a, G2a, latcha, OEa,
         dclkb, Ab, Bb, Cb, Db, R1b, B1b, G1b, R2b, B2b, G2b, latchb, OEb):
-    #clk = Signal(bool(0))
+    clk = Signal(bool(0))
     #divider = clockDivider(inclk, clk, 0x400000);
     
     img = [Signal(intbv(0)[2*bitsPerColor*3:]) for i in range(2*width*height/2)]
 
-    rs = read_spi(mosi, sclk, img, 2*bitsPerColor*3, 2*width*height/2)
-    da = display(clk, dclka, Aa, Ba, Ca, Da, R1a, B1a, G1a, R2a, B2a, G2a, latcha, OEa, img, 0)
-    db = display(clk, dclkb, Ab, Bb, Cb, Db, R1b, B1b, G1b, R2b, B2b, G2b, latchb, OEb, img, width*height/2)
-    return rs, da, db
+    cd = clockDivider(inclk, clk, 1)
+
+    rs = read_spi(rst, mosi, sclk, img, 2*bitsPerColor*3, 2*width*height/2)
+    da = display(clk, rst, dclka, Aa, Ba, Ca, Da, R1a, B1a, G1a, R2a, B2a, G2a, latcha, OEa, img, 0)
+    db = display(clk, rst, dclkb, Ab, Bb, Cb, Db, R1b, B1b, G1b, R2b, B2b, G2b, latchb, OEb, img, width*height/2)
+    return rs, da, db, cd
 
 clk = Signal(bool(0))
 dclka = Signal(bool(0))
@@ -163,9 +183,11 @@ OEb = Signal(bool(0))
 mosi = Signal(bool(0))
 sclk = Signal(bool(0))
 
+rst = ResetSignal(0, active=0, async=True)
+
 clk_driver_inst = clk_driver(clk)
 
-main_inst = toVerilog(main, clk, mosi, sclk,
+main_inst = toVerilog(main, clk, rst, mosi, sclk,
         dclka, Aa, Ba, Ca, Da, R1a, B1a, G1a, R2a, B2a, G2a, latcha, OEa,
         dclkb, Ab, Bb, Cb, Db, R1b, B1b, G1b, R2b, B2b, G2b, latchb, OEb)
 
