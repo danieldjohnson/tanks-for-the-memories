@@ -5,8 +5,8 @@
 #
 import math
 
-OUTPUT_LED = False
-OUTPUT_STDOUT = True
+OUTPUT_LED = True
+OUTPUT_STDOUT = False
 
 DEBUG           = True
 TANK_COLORS     = [(30,30,90), (90,30,30), (30,90,30), (90,90,30), (90,30,90), (30,90,90), (30,60,90), (60,30,90), (90,60,30), (60,30,90)]
@@ -53,6 +53,8 @@ def __guarded_getattr_validate__(name, value):
     else:
         raise TypeError("Cannot assign to constants!")
 
+FPGA_RESET_PIN = 15
+spi_max_write_sz = 4096
 
 rev_bits_table = [
         0x00, 0x80, 0x40, 0xc0, 0x20, 0xa0, 0x60, 0xe0,

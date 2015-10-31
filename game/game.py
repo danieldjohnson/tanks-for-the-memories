@@ -15,8 +15,11 @@ import random
 import select
 import hashlib
 
-from tank import Tank
 from constants import *
+if OUTPUT_LED:
+    import RPi.GPIO
+
+from tank import Tank
 from maps import *
 from tank_ais import SandboxCodeExecutionFailed
 
@@ -285,17 +288,32 @@ class Game:
 
         # draw the board to the LED matrix
         if OUTPUT_LED:
-            bytes_to_write = [0 for i in range(3*32*64)]
+            assert len(self.board) == 64,    'Board width  not 64, update display output'
+            assert len(self.board[0]) == 64, 'Board height not 64, update display output'
+            mymap = [[(y*4,x*4,0) for x in range(64)] for y in range(64)]
+            bytes_to_write = [0 for i in range(3*64*64)]
             for row in range(32/2):
                 for col in range(64):
-                    bytes_to_write[(row*64+col)*3*2+0] = rev_bits_table[gamma_correction_table[COLORS[self.board[row][col]][0]]]
-                    bytes_to_write[(row*64+col)*3*2+1] = rev_bits_table[gamma_correction_table[COLORS[self.board[row][col]][1]]]
-                    bytes_to_write[(row*64+col)*3*2+2] = rev_bits_table[gamma_correction_table[COLORS[self.board[row][col]][2]]]
-                    bytes_to_write[(row*64+col)*3*2+3] = rev_bits_table[gamma_correction_table[COLORS[self.board[row+16][col]][0]]]
-                    bytes_to_write[(row*64+col)*3*2+4] = rev_bits_table[gamma_correction_table[COLORS[self.board[row+16][col]][1]]]
-                    bytes_to_write[(row*64+col)*3*2+5] = rev_bits_table[gamma_correction_table[COLORS[self.board[row+16][col]][2]]]
-            with open("/dev/spidev0.1") as spifile:
-                spifile.write(bytearray(bytes_to_write))
+                    bytes_to_write[(    row *64+col)*3*2+0] = rev_bits_table[gamma_correction_table[COLORS[self.board[-(row+ 0)-1][-col-1]][0]]]
+                    bytes_to_write[(    row *64+col)*3*2+1] = rev_bits_table[gamma_correction_table[COLORS[self.board[-(row+ 0)-1][-col-1]][1]]]
+                    bytes_to_write[(    row *64+col)*3*2+2] = rev_bits_table[gamma_correction_table[COLORS[self.board[-(row+ 0)-1][-col-1]][2]]]
+
+                    bytes_to_write[(    row *64+col)*3*2+3] = rev_bits_table[gamma_correction_table[COLORS[self.board[-(row+16)-1][-col-1]][0]]]
+                    bytes_to_write[(    row *64+col)*3*2+4] = rev_bits_table[gamma_correction_table[COLORS[self.board[-(row+16)-1][-col-1]][1]]]
+                    bytes_to_write[(    row *64+col)*3*2+5] = rev_bits_table[gamma_correction_table[COLORS[self.board[-(row+16)-1][-col-1]][2]]]
+
+                    bytes_to_write[((16+row)*64+col)*3*2+0] = rev_bits_table[gamma_correction_table[COLORS[self.board[-(row+32)-1][-col-1]][0]]]
+                    bytes_to_write[((16+row)*64+col)*3*2+1] = rev_bits_table[gamma_correction_table[COLORS[self.board[-(row+32)-1][-col-1]][1]]]
+                    bytes_to_write[((16+row)*64+col)*3*2+2] = rev_bits_table[gamma_correction_table[COLORS[self.board[-(row+32)-1][-col-1]][2]]]
+
+                    bytes_to_write[((16+row)*64+col)*3*2+3] = rev_bits_table[gamma_correction_table[COLORS[self.board[-(row+48)-1][-col-1]][0]]]
+                    bytes_to_write[((16+row)*64+col)*3*2+4] = rev_bits_table[gamma_correction_table[COLORS[self.board[-(row+48)-1][-col-1]][1]]]
+                    bytes_to_write[((16+row)*64+col)*3*2+5] = rev_bits_table[gamma_correction_table[COLORS[self.board[-(row+48)-1][-col-1]][2]]]
+            reset_fpga()
+            with open("/dev/spidev0.1", "wb") as spifile:
+                while bytes_to_write:
+                    spifile.write(bytearray(bytes_to_write[:spi_max_write_sz]))
+                    bytes_to_write = bytes_to_write[spi_max_write_sz:]
 
     # ------ MISCELLANEOUS THINGS THE GAME NEEDS TO DO -------
 
@@ -325,6 +343,11 @@ class Game:
         #               doctor,hugger,
         return [tank_1,tank_2,tank_3,None,None,None,None,None,None,None,None]
 
+if OUTPUT_LED:
+    def reset_fpga():
+        RPi.GPIO.output(FPGA_RESET_PIN, 0)
+        RPi.GPIO.output(FPGA_RESET_PIN, 1)
+        
 
 def preprocess_idnum(idnum):
     # Hash the id number so that it's not trivial to match students to their
@@ -336,22 +359,35 @@ if __name__ == "__main__":
     the_game = Game(walls_w_hosp)
     last_time_stamp = time.time()
     t_minus = 0.1
-    stdscr = curses.initscr()
-    curses.start_color()
-    win = curses.newwin(65,65,0,0)
-    curses.init_pair(1, curses.COLOR_RED, curses.COLOR_WHITE) #empty/eye
-    curses.init_pair(2, curses.COLOR_BLUE, curses.COLOR_WHITE)  #wall
-    curses.init_pair(3, curses.COLOR_MAGENTA, curses.COLOR_WHITE) #hospital
-    curses.init_pair(4, curses.COLOR_CYAN, curses.COLOR_WHITE)  #bullet
-    curses.init_pair(5, curses.COLOR_RED, curses.COLOR_WHITE)  #tank
+    if OUTPUT_STDOUT:
+        stdscr = curses.initscr()
+        curses.start_color()
+        win = curses.newwin(65,65,0,0)
+        curses.init_pair(1, curses.COLOR_RED, curses.COLOR_WHITE) #empty/eye
+        curses.init_pair(2, curses.COLOR_BLUE, curses.COLOR_WHITE)  #wall
+        curses.init_pair(3, curses.COLOR_MAGENTA, curses.COLOR_WHITE) #hospital
+        curses.init_pair(4, curses.COLOR_CYAN, curses.COLOR_WHITE)  #bullet
+        curses.init_pair(5, curses.COLOR_RED, curses.COLOR_WHITE)  #tank
+    if OUTPUT_LED:
+        # Toggle the FPGA's reset line
+        RPi.GPIO.setmode(RPi.GPIO.BOARD)
+        RPi.GPIO.setup(FPGA_RESET_PIN, RPi.GPIO.OUT)
+        reset_fpga()
+
     buffered_input = ""
-    while True:
-        if select.select([sys.stdin,],[],[],0.0) == ([sys.stdin],[],[]):
-            idnum = sys.stdin.readline()[2:-3]
-            the_game.pending_tank_ids.append(preprocess_idnum(idnum))
-        the_game.update()
-        t_minus -= (time.time() - last_time_stamp)
-        last_time_stamp = time.time()
-        if t_minus < 0:
-            the_game.draw_board()
-            t_minus = 0.1
+    try:
+        while True:
+            if select.select([sys.stdin,],[],[],0.0) == ([sys.stdin],[],[]):
+                idnum = sys.stdin.readline()[2:-3]
+                the_game.pending_tank_ids.append(preprocess_idnum(idnum))
+            the_game.update()
+            t_minus -= (time.time() - last_time_stamp)
+            last_time_stamp = time.time()
+            if t_minus < 0:
+                the_game.draw_board()
+                t_minus = 0.1
+    finally:
+        if OUTPUT_LED:
+            RPi.GPIO.cleanup()
+        if OUTPUT_STDOUT:
+            curses.endwin()
