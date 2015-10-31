@@ -19,8 +19,7 @@ var userdb = new Datastore({ filename: '../data/usrdb.db', autoload: true });
 passport.use(new GoogleStrategy({
     clientID: credentials.GOOGLE_CONSUMER_KEY,
     clientSecret: credentials.GOOGLE_CONSUMER_SECRET,
-    //callbackURL: 'http://79b7adfb.ngrok.io:3000',
-    callbackURL: 'http://localhost:3000/auth/google/return',
+    callbackURL: 'http://localhost:80/auth/google/return',
     },
     function(accessToken, refreshToken, profile, done) {
         console.log(profile);
@@ -265,7 +264,7 @@ app.post('/edit',
     }
 );
 
-var server = app.listen(3000, function () {
+var server = app.listen(80, function () {
     var host = server.address().address;
     var port = server.address().port;
 
