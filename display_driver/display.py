@@ -26,94 +26,83 @@ bitsPerColor = 8
 #    ..., (row 0, column
 #   1's red LSB), ..., (row 1 column 0's red LSB), ....]
 # next_img actually goes 
-def display(clk, dclk, A, B, C, D, R1, B1, G1, R2, B2, G2, latch, OE, next_img):
+def display(clk, dclk, A, B, C, D, R1, B1, G1, R2, B2, G2, latch, OE, img, imgoffset):
     bpc = bitsPerColor # Alias for shorter lines
 
     @always_comb
     def do_dclk():
         dclk.next = not clk
 
-    do_latch = Signal(bool(0))
-
     # This goes up to 2^(bpc)-1
     # There are 2^(bpc) different shades, and one is "always off" and one is
     # "always on" so we need one fewer part in our counter
     pwm_ctr = Signal(intbv(0, min=0, max=2**bpc-1))
-    cur_img = Signal(intbv(0)[bpc*4*width*height:])
 
     which_row = Signal(intbv(val=0, min=0, max=height/2))
     which_col = Signal(intbv(val=0, min=0, max=width))
+    next_row = Signal(intbv(val=0, min=0, max=height/2))
+    next_col = Signal(intbv(val=0, min=0, max=width))
+    next_colors = Signal(intbv(val=0)[3*bpc*2:])
 
     @always(clk.posedge)
     def disp():
-        r1idx = which_row             *width*4*bpc + which_col*4*bpc
-        r2idx = (which_row + height/2)*width*4*bpc + which_col*4*bpc
+        # Output is always enabled
+        OE.next = False
 
-        #print '{:6}: {:>3}, ({:>2}, {:>2}) => ({:d} {:d} {:d}), ({:d} {:d} {:d}) L: {:d} OE: {:d} ci[r1idx] = {:6x}'.format(
-        #        now(),
-        #        pwm_ctr,
-        #        which_row, which_col,
-        #        bool(R1), bool(G1), bool(B1), 
-        #        bool(R2), bool(G2), bool(B2),
-        #        bool(latch), bool(OE),
-        #        int(cur_img[r1idx+24:r1idx]))
+        R1.next = next_colors[1*bpc : 0*bpc] > pwm_ctr
+        G1.next = next_colors[2*bpc : 1*bpc] > pwm_ctr
+        B1.next = next_colors[3*bpc : 2*bpc] > pwm_ctr
+        R2.next = next_colors[4*bpc : 3*bpc] > pwm_ctr
+        G2.next = next_colors[5*bpc : 4*bpc] > pwm_ctr
+        B2.next = next_colors[6*bpc : 5*bpc] > pwm_ctr
 
-        R1.next = cur_img[r1idx + 1*bpc : r1idx + 0*bpc] > pwm_ctr
-        G1.next = cur_img[r1idx + 2*bpc : r1idx + 1*bpc] > pwm_ctr
-        B1.next = cur_img[r1idx + 3*bpc : r1idx + 2*bpc] > pwm_ctr
-        R2.next = cur_img[r2idx + 1*bpc : r2idx + 0*bpc] > pwm_ctr
-        G2.next = cur_img[r2idx + 2*bpc : r2idx + 1*bpc] > pwm_ctr
-        B2.next = cur_img[r2idx + 3*bpc : r2idx + 2*bpc] > pwm_ctr
+        A.next = which_row[0]
+        B.next = which_row[1]
+        C.next = which_row[2]
+        D.next = which_row[3]
 
-        A.next = which_row[3]
-        B.next = which_row[2]
-        C.next = which_row[1]
-        D.next = which_row[0]
+        next_colors.next = img[imgoffset + (next_row+1)*width + next_col]
 
-        do_latch.next = False
+        latch.next = which_col == 63
+        which_col.next = next_col
+        which_row.next = next_row
 
-        if which_col == width-1:
-            do_latch.next = True
-            if which_row == height/2-1:
-                cur_img.next = next_img
-                which_row.next = 0
-
+        if next_col == width-1:
+            next_col.next = 0
+            if next_row == height/2-1:
+                next_row.next = 0
                 if pwm_ctr == pwm_ctr.max - 1:
                     pwm_ctr.next = 0
                 else:
                     pwm_ctr.next = pwm_ctr + 1
             else:
-                which_row.next = which_row + 1
-            which_col.next = 0
+                next_row.next = next_row + 1
         else:
-            which_col.next = which_col + 1
+            next_col.next = next_col + 1
 
+    return disp, do_dclk
 
-    @always(clk.negedge)
-    def close_latch():
-        latch.next = do_latch
+def read_spi(mosi, sclk, rxdata, minor_size, major_size):
+    minor_idx = Signal(intbv(val=0, min=0, max=minor_size))
+    major_idx = Signal(intbv(val=0, min=0, max=major_size))
 
-    return disp, close_latch, do_dclk
-
-def read_spi(mosi, sclk, rxdata, num_bits):
+    buf = Signal(intbv(0)[minor_size-1:])
     @always(sclk.posedge)
     def RX():
-        rxdata[num_bits:1].next = rxdata[num_bits-1:1]
-        rxdata[0].next = mosi
+        if minor_idx == minor_size-1:
+            rxdata[major_idx].next = concat(mosi, buf)
+            major_idx.next = major_idx+1
+        else:
+            buf[minor_idx].next = mosi
+            minor_idx.next = minor_idx+1
     return RX
 
-def clk_driver(clk, dclk, A, B, C, D, R1, B1, G1, R2, B2, G2, latch, OE):
+def clk_driver(clk):
     halfPeriod = delay(1)
 
     @always(halfPeriod)
     def driveClk():
         clk.next = not clk
-        print '{:6}: ({:d} {:d} {:d}), ({:d} {:d} {:d}) L: {:d} OE: {:d}'.format(
-                now(),
-                bool(R1), bool(G1), bool(B1), 
-                bool(R2), bool(G2), bool(B2),
-                bool(latch), bool(OE))
-
 
     return driveClk
 
@@ -131,47 +120,54 @@ def clockDivider(clk, slowclk, divRate = 0x400000):
 
     return divide
 
-def main(inclk, dclk, A, B, C, D, R1, B1, G1, R2, B2, G2, latch, OE, mosi, sclk):
-    clk = Signal(bool(0))
-    divider = clockDivider(inclk, clk, 0x400000);
+def main(clk, mosi, sclk,
+        dclka, Aa, Ba, Ca, Da, R1a, B1a, G1a, R2a, B2a, G2a, latcha, OEa,
+        dclkb, Ab, Bb, Cb, Db, R1b, B1b, G1b, R2b, B2b, G2b, latchb, OEb):
+    #clk = Signal(bool(0))
+    #divider = clockDivider(inclk, clk, 0x400000);
     
-    img = Signal(intbv()[bitsPerColor*4*width*height:])
-    rs = read_spi(mosi, sclk, img, bitsPerColor*4*width*height)
-    d = display(clk, dclk, A, B, C, D, R1, B1, G1, R2, B2, G2, latch, OE, img)
-    return rs, divider, d
+    img = [Signal(intbv(0)[2*bitsPerColor*3:]) for i in range(2*width*height/2)]
 
-
-#imgList = eval(open('../../exampleimage3').read())
-#
-#imgBld = intbv(0)[bitsPerColor*3*width*height:]
-#for i in range(len(imgBld)):
-#    imgBld[i] = imgList[i]
-#next_img = Signal(imgBld)
+    rs = read_spi(mosi, sclk, img, 2*bitsPerColor*3, 2*width*height/2)
+    da = display(clk, dclka, Aa, Ba, Ca, Da, R1a, B1a, G1a, R2a, B2a, G2a, latcha, OEa, img, 0)
+    db = display(clk, dclkb, Ab, Bb, Cb, Db, R1b, B1b, G1b, R2b, B2b, G2b, latchb, OEb, img, width*height/2)
+    return rs, da, db
 
 clk = Signal(bool(0))
-dclk = Signal(bool(0))
-A = Signal(bool(0))
-B = Signal(bool(0))
-C = Signal(bool(0))
-D = Signal(bool(0))
-R1 = Signal(bool(0))
-B1 = Signal(bool(0))
-G1 = Signal(bool(0))
-R2 = Signal(bool(0))
-B2 = Signal(bool(0))
-G2 = Signal(bool(0))
-latch = Signal(bool(0))
-OE = Signal(bool(0))
+dclka = Signal(bool(0))
+Aa  = Signal(bool(0))
+Ba  = Signal(bool(0))
+Ca  = Signal(bool(0))
+Da  = Signal(bool(0))
+R1a = Signal(bool(0))
+B1a = Signal(bool(0))
+G1a = Signal(bool(0))
+R2a = Signal(bool(0))
+B2a = Signal(bool(0))
+G2a = Signal(bool(0))
+latcha = Signal(bool(0))
+OEa = Signal(bool(0))
+dclkb = Signal(bool(0))
+Ab  = Signal(bool(0))
+Bb  = Signal(bool(0))
+Cb  = Signal(bool(0))
+Db  = Signal(bool(0))
+R1b = Signal(bool(0))
+B1b = Signal(bool(0))
+G1b = Signal(bool(0))
+R2b = Signal(bool(0))
+B2b = Signal(bool(0))
+G2b = Signal(bool(0))
+latchb = Signal(bool(0))
+OEb = Signal(bool(0))
 mosi = Signal(bool(0))
 sclk = Signal(bool(0))
 
-clk_driver_inst = clk_driver(clk, dclk, A, B, C, D, R1, B1, G1, R2, B2, G2, latch, OE)
+clk_driver_inst = clk_driver(clk)
 
-#display_inst = display(clk, dclk, A, B, C, D, R1, B1, G1, R2, B2, G2, latch, OE, next_img)
-#display_inst = toVerilog(display, clk, dclk, A, B, C, D, R1, B1, G1, R2, B2, G2, latch, OE, next_img)
-#display_inst = toVerilog(display, clk, dclk, A, B, C, D, R1, B1, G1, R2, B2, G2, latch, OE)
-main_inst = toVerilog(main, clk, dclk, A, B, C, D, R1, B1, G1, R2, B2, G2, latch, OE, mosi, sclk)
-#main_inst = main(clk, dclk, A, B, C, D, R1, B1, G1, R2, B2, G2, latch, OE, mosi, sclk)
+main_inst = toVerilog(main, clk, mosi, sclk,
+        dclka, Aa, Ba, Ca, Da, R1a, B1a, G1a, R2a, B2a, G2a, latcha, OEa,
+        dclkb, Ab, Bb, Cb, Db, R1b, B1b, G1b, R2b, B2b, G2b, latchb, OEb)
 
 #sim = Simulation(main_inst, clk_driver_inst)
 #sim.run(10000)
