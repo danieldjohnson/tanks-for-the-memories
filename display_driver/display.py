@@ -58,11 +58,11 @@ def display(clk, dclk, A, B, C, D, R1, B1, G1, R2, B2, G2, latch, OE, next_img):
         #        bool(latch), bool(OE),
         #        int(cur_img[r1idx+24:r1idx]))
 
-        R1.next = cur_img[r1idx + bpc : r1idx ] > pwm_ctr
-        G1.next = cur_img[r1idx + 2*bpc : r1idx + bpc] > pwm_ctr
+        R1.next = cur_img[r1idx + 1*bpc : r1idx + 0*bpc] > pwm_ctr
+        G1.next = cur_img[r1idx + 2*bpc : r1idx + 1*bpc] > pwm_ctr
         B1.next = cur_img[r1idx + 3*bpc : r1idx + 2*bpc] > pwm_ctr
-        R2.next = cur_img[r2idx + bpc : r2idx ] > pwm_ctr
-        G2.next = cur_img[r2idx + 2*bpc : r2idx + bpc] > pwm_ctr
+        R2.next = cur_img[r2idx + 1*bpc : r2idx + 0*bpc] > pwm_ctr
+        G2.next = cur_img[r2idx + 2*bpc : r2idx + 1*bpc] > pwm_ctr
         B2.next = cur_img[r2idx + 3*bpc : r2idx + 2*bpc] > pwm_ctr
 
         A.next = which_row[3]
