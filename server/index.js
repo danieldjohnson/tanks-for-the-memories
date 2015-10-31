@@ -19,7 +19,7 @@ var userdb = new Datastore({ filename: '../data/usrdb.db', autoload: true });
 passport.use(new GoogleStrategy({
     clientID: credentials.GOOGLE_CONSUMER_KEY,
     clientSecret: credentials.GOOGLE_CONSUMER_SECRET,
-    callbackURL: 'http://localhost/auth/google/return',
+    callbackURL: 'http://t4tm.st.hmc.edu:80/auth/google/return',
     },
     function(accessToken, refreshToken, profile, done) {
         console.log(profile);
