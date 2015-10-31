@@ -8,7 +8,6 @@ var fs = require('fs');
 var child_process = require('child_process');
 var Datastore = require('nedb');
 var crypto = require('crypto');
-var shasum = crypto.createHash('sha512');
 
 var credentials = require('./credentials');
 
@@ -152,6 +151,7 @@ app.post('/account/setup',
                     req.flash('error', 'Someone else already registered that ID number!');
                     res.redirect('/account/setup');
                 } else {
+                    var shasum = crypto.createHash('sha512');
                     shasum.update(req.body.idnum);
                     var hashed_idnum = shasum.digest('hex');
                     userdb.update({ _id: req.user._id }, {$set:{ student_id_num_hashed: hashed_idnum }},
