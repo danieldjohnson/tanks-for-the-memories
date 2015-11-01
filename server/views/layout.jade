@@ -42,7 +42,9 @@ html
                   li
                     a(href='#{key}') #{val}
             if loggedin
-              p.navbar-right.navbar-text Hi, #{name}!
+              p.navbar-right.navbar-text
+                | Hi, #{name}! | 
+                a(href='/logout') Log out
     block content
   
   include inc/footer
