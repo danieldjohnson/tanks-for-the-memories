@@ -94,15 +94,15 @@ def display(clk, rst, dclk, A, B, C, D, R1, B1, G1, R2, B2, G2, latch, OE, img, 
 
     return disp, do_dclk
 
-def read_spi(rst, mosi, sclk, rxdata, minor_size, major_size):
+def read_spi(mosi, sclk, spi_rst, rxdata, minor_size, major_size):
     minor_idx = Signal(intbv(val=0, min=0, max=minor_size))
     major_idx = Signal(intbv(val=0, min=0, max=major_size))
 
     buf = Signal(intbv(0)[minor_size-1:])
-    @always(sclk.posedge, rst.negedge)
+    @always(sclk.posedge, spi_rst.negedge)
     def RX():
-        if not rst:
-            # Actually reset because it's active low
+        if not spi_rst:
+            # Actually reset because they're active low
             minor_idx.next = 0
             major_idx.next = 0
         else:
@@ -138,7 +138,7 @@ def clockDivider(clk, slowclk, divRate = 0x400000):
 
     return divide
 
-def main(inclk, rst, mosi, sclk,
+def main(inclk, rst, mosi, sclk, spi_rst,
         dclka, Aa, Ba, Ca, Da, R1a, B1a, G1a, R2a, B2a, G2a, latcha, OEa,
         dclkb, Ab, Bb, Cb, Db, R1b, B1b, G1b, R2b, B2b, G2b, latchb, OEb):
     clk = Signal(bool(0))
@@ -148,7 +148,7 @@ def main(inclk, rst, mosi, sclk,
 
     cd = clockDivider(inclk, clk, 1)
 
-    rs = read_spi(rst, mosi, sclk, img, 2*bitsPerColor*3, 2*width*height/2)
+    rs = read_spi(mosi, sclk, spi_rst, img, 2*bitsPerColor*3, 2*width*height/2)
     da = display(clk, rst, dclka, Aa, Ba, Ca, Da, R1a, B1a, G1a, R2a, B2a, G2a, latcha, OEa, img, 0)
     db = display(clk, rst, dclkb, Ab, Bb, Cb, Db, R1b, B1b, G1b, R2b, B2b, G2b, latchb, OEb, img, width*height/2)
     return rs, da, db, cd
@@ -182,12 +182,13 @@ latchb = Signal(bool(0))
 OEb = Signal(bool(0))
 mosi = Signal(bool(0))
 sclk = Signal(bool(0))
+spi_rst = ResetSignal(0, active=0, async=True)
 
 rst = ResetSignal(0, active=0, async=True)
 
 clk_driver_inst = clk_driver(clk)
 
-main_inst = toVerilog(main, clk, rst, mosi, sclk,
+main_inst = toVerilog(main, clk, rst, mosi, sclk, spi_rst,
         dclka, Aa, Ba, Ca, Da, R1a, B1a, G1a, R2a, B2a, G2a, latcha, OEa,
         dclkb, Ab, Bb, Cb, Db, R1b, B1b, G1b, R2b, B2b, G2b, latchb, OEb)
 

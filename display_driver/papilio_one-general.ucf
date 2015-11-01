@@ -30,36 +30,36 @@ CONFIG PROHIBIT=P49;
 CONFIG PROHIBIT=P48;
 CONFIG PROHIBIT=P47;
 
-NET clk      LOC="P89"  | IOSTANDARD=LVCMOS25 | PERIOD=31.25ns;            # CLK
-NET mosi     LOC="P18"  | IOSTANDARD=LVCMOS33;                             # A0
-NET sclk     LOC="P86"  | IOSTANDARD=LVCMOS33;                             # A15
-NET spi_rst      LOC="P22"  | IOSTANDARD=LVCMOS33 | PULLUP;                 # B15
-NET rst      LOC="P25"  | IOSTANDARD=LVCMOS33 | PULLUP;                 # B14
+NET clk         LOC="P89"  | IOSTANDARD=LVCMOS25 | PERIOD=31.25ns;            # CLK
+NET sclk        LOC="P91"  | IOSTANDARD=LVCMOS33;                             # C0
+NET mosi        LOC="P92"  | IOSTANDARD=LVCMOS33;                             # C1
+NET spi_rst     LOC="P94"  | IOSTANDARD=LVCMOS33 | PULLUP;                    # C2
+NET rst         LOC="P25"  | IOSTANDARD=LVCMOS33 | PULLUP;                    # B14
 
-NET latchb     LOC="P60"  | IOSTANDARD=LVCMOS33;                             # A8
-NET Db    LOC="P65"  | IOSTANDARD=LVCMOS33;                             # A10
-NET Bb    LOC="P67"  | IOSTANDARD=LVCMOS33;                             # A11
-NET G2b    LOC="P79"  | IOSTANDARD=LVCMOS33;                             # A13
-NET G1b    LOC="P84"  | IOSTANDARD=LVCMOS33;                             # A14
-NET R1b     LOC="P85"  | IOSTANDARD=LVCMOS33;                             # B0
-NET B1b     LOC="P83"  | IOSTANDARD=LVCMOS33;                             # B1
-NET R2b     LOC="P78"  | IOSTANDARD=LVCMOS33;                             # B2
-NET B2b     LOC="P71"  | IOSTANDARD=LVCMOS33;                             # B3
-NET Ab     LOC="P68"  | IOSTANDARD=LVCMOS33;                             # B4
-NET Cb     LOC="P66"  | IOSTANDARD=LVCMOS33;                             # B5
-NET dclkb     LOC="P63"  | IOSTANDARD=LVCMOS33;                             # B6
-NET OEb     LOC="P61"  | IOSTANDARD=LVCMOS33;                             # B7
+NET latchb      LOC="P60"  | IOSTANDARD=LVCMOS33;                             # A8
+NET Db          LOC="P65"  | IOSTANDARD=LVCMOS33;                             # A10
+NET Bb          LOC="P67"  | IOSTANDARD=LVCMOS33;                             # A11
+NET G2b         LOC="P79"  | IOSTANDARD=LVCMOS33;                             # A13
+NET G1b         LOC="P84"  | IOSTANDARD=LVCMOS33;                             # A14
+NET R1b         LOC="P85"  | IOSTANDARD=LVCMOS33;                             # B0
+NET B1b         LOC="P83"  | IOSTANDARD=LVCMOS33;                             # B1
+NET R2b         LOC="P78"  | IOSTANDARD=LVCMOS33;                             # B2
+NET B2b         LOC="P71"  | IOSTANDARD=LVCMOS33;                             # B3
+NET Ab          LOC="P68"  | IOSTANDARD=LVCMOS33;                             # B4
+NET Cb          LOC="P66"  | IOSTANDARD=LVCMOS33;                             # B5
+NET dclkb       LOC="P63"  | IOSTANDARD=LVCMOS33;                             # B6
+NET OEb         LOC="P61"  | IOSTANDARD=LVCMOS33;                             # B7
 
-NET latcha        LOC="P91"  | IOSTANDARD=LVCMOS33;                             # C0
-NET Da        LOC="P92"  | IOSTANDARD=LVCMOS33;                             # C1
-NET Ba        LOC="P94"  | IOSTANDARD=LVCMOS33;                             # C2
-NET G2a        LOC="P95"  | IOSTANDARD=LVCMOS33;                             # C3
-NET G1a        LOC="P98"  | IOSTANDARD=LVCMOS33;                             # C4
-NET OEa        LOC="P2"   | IOSTANDARD=LVCMOS33;                             # C5
-NET dclka         LOC="P3"   | IOSTANDARD=LVCMOS33;                             # C6
-NET Ca         LOC="P4"   | IOSTANDARD=LVCMOS33;                             # C7
-NET Aa         LOC="P5"   | IOSTANDARD=LVCMOS33;                             # C8
-NET B2a         LOC="P9"   | IOSTANDARD=LVCMOS33;                             # C9
-NET R2a      LOC="P10"  | IOSTANDARD=LVCMOS33;                             # C10
-NET B1a     LOC="P11"  | IOSTANDARD=LVCMOS33;                             # C11
-NET R1a        LOC="P12"  | IOSTANDARD=LVCMOS33;                             # C12
+NET latcha      LOC="P95"  | IOSTANDARD=LVCMOS33;                             # C3
+NET Da          LOC="P98"  | IOSTANDARD=LVCMOS33;                             # C4
+NET Ba          LOC="P2"   | IOSTANDARD=LVCMOS33;                             # C5
+NET G2a         LOC="P3"   | IOSTANDARD=LVCMOS33;                             # C6
+NET G1a         LOC="P4"   | IOSTANDARD=LVCMOS33;                             # C7
+NET OEa         LOC="P5"   | IOSTANDARD=LVCMOS33;                             # C8
+NET dclka       LOC="P9"   | IOSTANDARD=LVCMOS33;                             # C9
+NET Ca          LOC="P10"  | IOSTANDARD=LVCMOS33;                             # C10
+NET Aa          LOC="P11"  | IOSTANDARD=LVCMOS33;                             # C11
+NET B2a         LOC="P12"  | IOSTANDARD=LVCMOS33;                             # C12
+NET R2a         LOC="P15"  | IOSTANDARD=LVCMOS33;                             # C13
+NET B1a         LOC="P16"  | IOSTANDARD=LVCMOS33;                             # C14
+NET R1a         LOC="P17"  | IOSTANDARD=LVCMOS33;                             # C15
