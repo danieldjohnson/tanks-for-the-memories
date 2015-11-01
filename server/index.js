@@ -190,12 +190,18 @@ app.get('/account/info',
 );
 
 var get_player_status = function(idnum, cb) {
-    var statusfile = '../data/' + idnum + '_stat.txt';
+    var statusfile = '../data/' + idnum + '_stat.json';
     fs.stat(statusfile, function (err, stat) {
         if (!err && stat.isFile()){
-            fs.readFile(statusfile, cb);
+            fs.readFile(statusfile, function(err, data) {
+                if(err) {
+                    cb(err, null);
+                } else {
+                    cb(null, JSON.parse(data));
+                }
+            });
         } else {
-            cb(null, "No status to show. Is your tank in play?")
+            cb(null, null);
         }
     });
 }

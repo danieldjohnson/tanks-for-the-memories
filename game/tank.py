@@ -8,6 +8,7 @@ import math
 from constants import *
 from tank_ais import AIManager
 from bullet import Bullet
+import json
 
 class Tank:
 
@@ -122,8 +123,12 @@ class Tank:
 
     def update_stat_file(self):
         """ updates the status file, which is shown in the web portal """
-        logfile = "../data/{}_stat.txt".format(self.ID)
-        rhp = int(math.ceil(self.hp))
-        healthbar = "#"*rhp + "."*(MAX_TANK_HP - rhp)
+        logfile = "../data/{}_stat.json".format(self.ID)
+        statobj = {
+            'hp': self.hp,
+            'max_hp': MAX_TANK_HP,
+            'ammo': self.ammo,
+            'score': self.score
+        }
         with open(logfile, 'w') as f:
-            f.write("Health: [{}] {}/{}\nAmmo: {}\nScore: {}".format(healthbar, self.hp, MAX_TANK_HP, self.ammo, self.score))
+            f.write(json.dumps(statobj))

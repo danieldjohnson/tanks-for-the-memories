@@ -2,9 +2,20 @@ extends layout
 
 block content
   div.container
-    div.jumbotron
-      h1 Status here!
-    p= stats
+    if stats
+      div.well(style="background-color:#3e3f3a; color:#fff;")
+        div(style="position:relative;")
+          div(style="position:absolute;top:15px;left:20px;")
+            +logo(70,'red','white')
+          div(style="height:100px; margin-left:130px;")
+            div Health: !{stats.hp.toFixed(2)} / !{stats.max_hp}
+            div.progress
+              div.progress-bar.progress-bar-success.progress-bar-striped(style={width:(100*stats.hp/stats.max_hp+'%')})
+            div Ammo: !{stats.ammo}
+            div Score: !{stats.score}
+    else
+      p No status to show. Is your tank alive?
+
     h2 Logs:
     pre
       p= log
