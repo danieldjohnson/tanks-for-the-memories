@@ -10,6 +10,7 @@ var Datastore = require('nedb');
 var crypto = require('crypto');
 
 var credentials = require('./credentials');
+var config = require('./config');
 
 var app = express();
 
@@ -18,7 +19,7 @@ var userdb = new Datastore({ filename: '../data/usrdb.db', autoload: true });
 passport.use(new GoogleStrategy({
     clientID: credentials.GOOGLE_CONSUMER_KEY,
     clientSecret: credentials.GOOGLE_CONSUMER_SECRET,
-    callbackURL: 'http://t4tm.st.hmc.edu:80/auth/google/return',
+    callbackURL: config.base_url + '/auth/google/return',
     },
     function(accessToken, refreshToken, profile, done) {
         console.log(profile);
@@ -264,7 +265,7 @@ app.post('/edit',
     }
 );
 
-var server = app.listen(80, function () {
+var server = app.listen(config.listen_port, function () {
     var host = server.address().address;
     var port = server.address().port;
 

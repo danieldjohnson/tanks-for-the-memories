@@ -16,6 +16,7 @@ import select
 import hashlib
 
 from constants import *
+from config import *
 if OUTPUT_LED:
     import RPi.GPIO
 

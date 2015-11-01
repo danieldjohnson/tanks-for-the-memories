@@ -5,9 +5,6 @@
 #
 import math
 
-OUTPUT_LED = True
-OUTPUT_STDOUT = False
-
 DEBUG           = True
 TANK_COLORS     = [(30,30,90), (90,30,30), (30,90,30), (90,90,30), (90,30,90), (30,90,90), (30,60,90), (60,30,90), (90,60,30), (60,30,90)]
 # first 10 codes are devoted to 10 possible tanks
