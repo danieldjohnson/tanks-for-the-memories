@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Start the web server
+cd ~/tanks-for-the-memories/server/
+sudo node index.js &> ~/game_output/web_out &
+
+# Flash the FPGA
+sudo papilio-prog -f ~/tanks-for-the-memories/display_driver/main.bit &> ~/game_output/papilio_prog_out
+
+# Wait for FPGA to initalize
+sleep 4
+
+# Setup SPI and Zero out display
+~/display_driver_helpers/spi_zero &> ~/game_output/spi_zero_out
+
+# Start the game
+cd ~/tanks-for-the-memories/game &> ~/game_output/cd_out
+
+while [ ! -f ~/stop_game ]; do
+    echo >> ~/game_output/game_out
+    echo >> ~/game_output/game_out
+    echo >> ~/game_output/game_out
+    echo >> ~/game_output/game_out
+    echo 'Starting game!' >> ~/game_output/game_out
+    sudo python game.py &>> ~/game_output/game_out
+    echo 'Game died. Restarting' >> ~/game_output/game_out
+done
+echo 'Found stop_game, stopping' >> ~/game_output/game_out

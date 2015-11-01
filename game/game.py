@@ -172,7 +172,7 @@ class Game:
                     x = p[0]
                     y = p[1]
                     # if you hit a wall or go off the edge of the screen, don't move
-                    if (self.board[y][x] == WALL) or (self.board[y][x] < 10) or (x < 0) or (y < 0) or (x > 63) or (y > 63):
+                    if (x < 0) or (y < 0) or (x > 63) or (y > 63) or (self.board[y][x] == WALL) or (self.board[y][x] < 10):
                         t.move(-1.0*dt)
                         break
 

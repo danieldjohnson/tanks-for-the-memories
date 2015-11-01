@@ -94,3 +94,6 @@ node_modules
 # Vim stuff
 .*.sw*
 .*.un~
+
+data
+!data/readme.md
