@@ -48,7 +48,7 @@ def __guarded_getattr_validate__(name, value):
     if name in safe_constants:
         return True
     else:
-        raise TypeError("Cannot assign to constants!")
+        raise TypeError("Cannot access this constant!")
 
 FPGA_RESET_PIN = 15
 spi_max_write_sz = 4096
