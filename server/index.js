@@ -163,6 +163,13 @@ app.post('/account/setup',
                             return
                         }
                         req.user = newDoc;
+
+                        // Copy default file
+                        var default_file = '../game/ais/tank_template.py';
+                        var aifile = '../data/' + hashed_idnum + '.py';
+                        var content = fs.readFileSync(default_file);
+                        fs.writeFileSync(aifile, content);
+
                         res.redirect('/account/info');
                     });
                 }
@@ -228,14 +235,7 @@ app.get('/status',
 
 var get_aifile_contents = function(idnum, cb) {
     var aifile = '../data/' + idnum + '.py';
-    var defaultfile = '../game/ais/tank_template.py';
-    fs.stat(aifile, function (err, stat) {
-        if (!err && stat.isFile()){
-            fs.readFile(aifile, cb);
-        } else {
-            fs.readFile(defaultfile, cb);
-        }
-    });
+    fs.readFile(aifile, cb);
 }
 
 app.get('/edit',
