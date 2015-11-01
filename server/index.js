@@ -302,6 +302,10 @@ var get_id_to_name_map = function(ids, cb){
             }
         });
     }
+    if(num_left == 0) {
+        cb({});
+        return;
+    }
     for (var i = 0; i < ids.length; i++) {
         do_find(ids[i]);
     };
