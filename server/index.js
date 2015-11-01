@@ -83,6 +83,7 @@ var prepareRender = function (req, res, next) {
             '/':'Home',
             '/account/info':'Account',
             '/status':'Status',
+            '/leaderboard':'Leaderboard',
             '/edit':'Edit Code',
         }
         res.locals.name = req.user.name;
@@ -267,6 +268,62 @@ app.post('/edit',
         child_process.execFile('python',['../game/test-compile.py', aifile],{},function(err,stdout,stderr){
             if (err) throw err;
             res.send(stdout);
+        });
+    }
+);
+
+var get_leaderboard = function(cb) {
+    var logfile = '../data/leaderboard.json';
+    fs.readFile(logfile, function(err, data) {
+        if(err) {
+            cb(err, null);
+        } else {
+            cb(null, JSON.parse(data));
+        }
+    });
+}
+
+var get_id_to_name_map = function(ids, cb){
+    var id_to_name_map = {};
+    var num_left = ids.length;
+    function do_find(cur_id){
+        userdb.findOne({ student_id_num_hashed: cur_id }, function(err, doc){
+            if(err){
+                console.log(err);
+                id_to_name_map[cur_id] = "Error finding!";
+            } else if(doc) {
+                id_to_name_map[cur_id] = doc.name;
+            } else {
+                id_to_name_map[cur_id] = cur_id + " (non-player tank)";
+            }
+            num_left--;
+            if(num_left == 0){
+                cb(id_to_name_map);
+            }
+        });
+    }
+    for (var i = 0; i < ids.length; i++) {
+        do_find(ids[i]);
+    };
+}
+
+app.get('/leaderboard',
+    ensureUserLoggedIn,
+    ensureUserSetUp,
+    function (req, res) {
+        get_leaderboard(function(err, leaderboard){
+            if (err){
+                console.log(err);
+                res.status(500).send("Bad!");
+                return
+            }
+            var ids = []
+            for (var i = 0; i < leaderboard.length; i++) {
+                ids[i] = leaderboard[i].id;
+            };
+            get_id_to_name_map(ids, function(map){
+                res.render('leaderboard', {leaderboard:leaderboard, namemap:map})
+            });
         });
     }
 );

@@ -2,11 +2,11 @@ extends layout
 
 block content
   div.container
-    if stats
+    if stats != undefined
       div.well(style="background-color:#3e3f3a; color:#fff;")
         div(style="position:relative;")
           div(style="position:absolute;top:15px;left:20px;")
-            +logo(70,'red','white')
+            +logo(70,'#aaa','white')
           div(style="height:100px; margin-left:130px;")
             div Health: !{stats.hp.toFixed(2)} / !{stats.max_hp}
             div.progress

@@ -14,6 +14,7 @@ import sys
 import random
 import select
 import hashlib
+import json
 
 from constants import *
 from config import *
@@ -344,6 +345,17 @@ class Game:
         #               doctor,hugger,
         return [tank_1,tank_2,tank_3,None,None,None,None,None,None,None,None]
 
+    def save_leaderboard(self):
+        leaderboardfile = "../data/leaderboard.json"
+        alive_tanks = [t for t in self.tanks if t is not None]
+        leaderboard = sorted([{
+                    'id':t.ID,
+                    'age':t.age,
+                    'color':TANK_COLORS[i]
+                } for i,t in enumerate(alive_tanks)], key=lambda l: l['age'], reverse=True)
+        with open(leaderboardfile, 'w') as f:
+            f.write(json.dumps(leaderboard))
+
 if OUTPUT_LED:
     def reset_fpga():
         RPi.GPIO.output(FPGA_RESET_PIN, 0)
@@ -382,6 +394,7 @@ if __name__ == "__main__":
                 idnum = sys.stdin.readline()[2:-3]
                 the_game.pending_tank_ids.append(preprocess_idnum(idnum))
             the_game.update()
+            the_game.save_leaderboard()
             t_minus -= (time.time() - last_time_stamp)
             last_time_stamp = time.time()
             if t_minus < 0:

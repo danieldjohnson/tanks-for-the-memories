@@ -1,0 +1,15 @@
+extends layout
+
+block content
+  div.container
+    h1 Leaderboard
+    div.well
+      - var i = 0
+      - each place in leaderboard
+        - i++
+        div.media
+          .media-left.media-middle
+            .media-object
+              +logo(50,'rgb('+place.color[0]+','+place.color[1]+','+place.color[2]+')','#fff')
+          .media-body
+            h4.media-heading(style="padding:20px 0;")= i+'. '+namemap[place.id]

@@ -26,6 +26,7 @@ class Tank:
         self.x_vel = x_vel
         self.y_vel = y_vel
         self.score = 0
+        self.age = 0
 
         self.hp = hp
         self.ammo = ammo
@@ -36,6 +37,8 @@ class Tank:
     def take_turn(self, tank_coords):
         state = [tank_coords, self.hp, self.ammo, [int(round(self.x_pos)), int(round(self.y_pos))], self.damage_IDs]
         turn_info = self.AI.takeTurn(state)
+
+        self.age += 1
 
         # set the tanks speed
         new_x_vel = turn_info[0][0]
@@ -128,7 +131,8 @@ class Tank:
             'hp': self.hp,
             'max_hp': MAX_TANK_HP,
             'ammo': self.ammo,
-            'score': self.score
+            'score': self.score,
+            'age': self.age,
         }
         with open(logfile, 'w') as f:
             f.write(json.dumps(statobj))
