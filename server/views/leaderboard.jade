@@ -1,15 +1,24 @@
 extends layout
 
+mixin scoreboard(source)
+  div.well
+    - var i = 0
+    - each place in source
+      - i++
+      div.media
+        .media-left.media-middle
+          .media-object
+            +logo(50,'rgb('+place.color[0]+','+place.color[1]+','+place.color[2]+')','#fff')
+        .media-body
+          div(style="padding:20px 0;")
+            h4.media-heading= i+'. '+namemap[place.id]
+            if place.msg
+              p= place.msg
+
 block content
   div.container
     h1 Leaderboard
-    div.well
-      - var i = 0
-      - each place in leaderboard
-        - i++
-        div.media
-          .media-left.media-middle
-            .media-object
-              +logo(50,'rgb('+place.color[0]+','+place.color[1]+','+place.color[2]+')','#fff')
-          .media-body
-            h4.media-heading(style="padding:20px 0;")= i+'. '+namemap[place.id]
+    h2 Survivors (oldest first)
+    +scoreboard(leaderboard.survivors)
+    h2 Score
+    +scoreboard(leaderboard.score)

@@ -15,6 +15,7 @@ import random
 import select
 import hashlib
 import json
+import collections
 
 from constants import *
 from config import *
@@ -45,6 +46,8 @@ class Game:
         self.ghost_board = []
         for i in range(64):
             self.ghost_board += [[EMPTY]*64]
+
+        self.scores = {}
 
         self.board       = copy.deepcopy(self.perma_board)
         self.tanks       = self.load_test_tanks()
@@ -101,6 +104,7 @@ class Game:
                                 break
                             else:
                                 self.tanks[i] = newtank
+                                self.scores[newid] = 0
                                 # Move on to next tank
                                 break
             self.pending_tank_ids = []
@@ -200,6 +204,7 @@ class Game:
                                     for q in self.tanks:
                                         if q != None and q.ID == bullet_id:
                                             q.score += 1
+                                            self.scores[q.ID] += 1
                                     break
 
                     # if you're on the hospital, heal yourself
@@ -325,18 +330,22 @@ class Game:
                       "ais/test_1.py",
                       copy.deepcopy(self.perma_board),
                       27,27)
+        self.scores["penis"] = 0
         tank_2 = Tank("dickbutt",
                       "ais/doctor.py",
                       copy.deepcopy(self.perma_board),
                       12,22)
+        self.scores["dickbutt"] = 0
         tank_3 = Tank("sex",
                       "ais/test_3.py",
                       copy.deepcopy(self.perma_board),
                       5,12)
+        self.scores["sex"] = 0
         doctor = Tank("doc",
                       "ais/doctor.py",
                       copy.deepcopy(self.perma_board),
                       5,4)
+        self.scores["doc"] = 0
         # hugger = Tank("hug",
         #               "ais/wall_hugger.py",
         #               copy.deepcopy(self.perma_board),
@@ -348,11 +357,21 @@ class Game:
     def save_leaderboard(self):
         leaderboardfile = "../data/leaderboard.json"
         alive_tanks = [t for t in self.tanks if t is not None]
-        leaderboard = sorted([{
+        survivors = sorted([{
                     'id':t.ID,
                     'age':t.age,
-                    'color':TANK_COLORS[i]
+                    'color':TANK_COLORS[i],
                 } for i,t in enumerate(alive_tanks)], key=lambda l: l['age'], reverse=True)
+        score = sorted([{
+                    'id':ID,
+                    'score':score,
+                    'msg':'Score: {}'.format(score),
+                    'color':(100,100,100),
+                } for ID,score in self.scores.iteritems()], key=lambda l: l['score'], reverse=True)
+        leaderboard = {
+            'survivors':survivors,
+            'score':score,
+        }
         with open(leaderboardfile, 'w') as f:
             f.write(json.dumps(leaderboard))
 

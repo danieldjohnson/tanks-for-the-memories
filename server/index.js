@@ -322,8 +322,8 @@ app.get('/leaderboard',
                 return
             }
             var ids = []
-            for (var i = 0; i < leaderboard.length; i++) {
-                ids[i] = leaderboard[i].id;
+            for (var i = 0; i < leaderboard.score.length; i++) {
+                ids[i] = leaderboard.score[i].id;
             };
             get_id_to_name_map(ids, function(map){
                 res.render('leaderboard', {leaderboard:leaderboard, namemap:map})
