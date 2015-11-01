@@ -388,13 +388,12 @@ def preprocess_idnum(idnum):
 
 if __name__ == "__main__":
 
-    the_game = Game(walls_w_hosp)
-    last_time_stamp = time.time()
-    t_minus = 0.1
     if OUTPUT_STDOUT:
         stdscr = curses.initscr()
         curses.start_color()
+        curses.curs_set(0) # Make cursor invisible
         win = curses.newwin(65,65,0,0)
+        win.nodelay(1) # Don't block in getch
         curses.init_pair(1, curses.COLOR_RED, curses.COLOR_WHITE) #empty/eye
         curses.init_pair(2, curses.COLOR_BLUE, curses.COLOR_WHITE)  #wall
         curses.init_pair(3, curses.COLOR_MAGENTA, curses.COLOR_WHITE) #hospital
@@ -406,16 +405,40 @@ if __name__ == "__main__":
         RPi.GPIO.setup(FPGA_RESET_PIN, RPi.GPIO.OUT)
         reset_fpga()
 
+    the_game = Game(walls_w_hosp)
+    last_time_stamp = time.time()
+    t_minus = 0.1
+
     buffered_input = ""
+    last_input_time = 0
     try:
         while True:
-            if select.select([sys.stdin,],[],[],0.0) == ([sys.stdin],[],[]):
-                idnum = sys.stdin.readline()[2:-3]
-                the_game.pending_tank_ids.append(preprocess_idnum(idnum))
+            now = time.time()
+            if now - last_input_time > 6:
+                # If no characters have been entered for a while, clear input
+                buffered_input = ""
+            if not OUTPUT_STDOUT \
+                  and select.select([sys.stdin],[],[],0.0) == ([sys.stdin],[],[]):
+                buffered_input += ''.join([ c for c in sys.stdin.readline()
+                                            if ord(c) >= ord('0') and ord(c) <= ord('9')])
+                last_input_time = now
+            if OUTPUT_STDOUT:
+                ch = win.getch()
+                while len(buffered_input) < 10 \
+                      and ch >= ord('0') and ch <= ord('9'):
+                    last_input_time = now
+                    buffered_input += chr(ch)
+                    ch = win.getch()
+            if len(buffered_input) >= 10:
+                # Add as tank
+                the_game.pending_tank_ids.append(preprocess_idnum(buffered_input[1:9]))
+                buffered_input = ''
+
+
             the_game.update()
             the_game.save_leaderboard()
-            t_minus -= (time.time() - last_time_stamp)
-            last_time_stamp = time.time()
+            t_minus -= (now - last_time_stamp)
+            last_time_stamp = now
             if t_minus < 0:
                 the_game.draw_board()
                 t_minus = 0.1
