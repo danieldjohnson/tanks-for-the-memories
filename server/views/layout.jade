@@ -41,6 +41,8 @@ html
                 - else            
                   li
                     a(href='#{key}') #{val}
+            if loggedin
+            p.navbar-right.navbar-text Hi, #{name}!
     block content
   
   include inc/footer

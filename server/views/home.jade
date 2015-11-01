@@ -1,7 +1,46 @@
 extends layout
 
+mixin scoreboard(source)
+  div.well
+    - var i = 0
+    - each place in source
+      - i++
+      div.media
+        .media-left.media-middle
+          .media-object
+            +logo(50,'rgb('+place.color[0]+','+place.color[1]+','+place.color[2]+')','#fff')
+        .media-body
+          div(style="padding:20px 0;")
+            h4.media-heading= i+'. '+namemap[place.id]
+            if place.msg
+              p= place.msg
+
 block content
   div.container
-    div.jumbotron
-      h1= title
-      p You are #{name}. Welcome!
+    if !loggedin
+      div.jumbotron
+        h1 Welcome to t4tm!
+        p
+          | Would you like to 
+          a(href="/auth/google") log in
+          | ?
+    else
+      h1.page-header Tank Status
+      div.well(style="background-color:#3e3f3a; color:#fff;")
+        if status != undefined
+          div(style="position:relative;")
+            div(style="position:absolute;top:15px;left:20px;")
+              +logo(70,'#aaa','white')
+            div(style="height:100px; margin-left:130px;")
+              div Health: !{status.hp.toFixed(2)} / !{status.max_hp}
+              div.progress
+                div.progress-bar.progress-bar-success.progress-bar-striped(style={width:(100*status.hp/status.max_hp+'%')})
+              div Ammo: !{status.ammo}
+              div Score: !{status.score}
+        else
+          p No status to show.
+    h1.page-header Leaderboard
+    h3 Survivors (oldest first)
+    +scoreboard(leaderboard.survivors)
+    h3 Score
+    +scoreboard(leaderboard.score)

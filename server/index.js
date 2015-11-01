@@ -81,18 +81,18 @@ var prepareRender = function (req, res, next) {
     if(req.user){
         res.locals.navbar = {
             '/':'Home',
-            '/account/info':'Account',
-            '/status':'Status',
-            '/leaderboard':'Leaderboard',
+            '/logs':'View Logs',
             '/edit':'Edit Code',
         }
         res.locals.name = req.user.name;
+        res.locals.loggedin = true;
     } else {
         res.locals.navbar = {
             '/':'Home',
-            '/auth/google':'Login',
+            '/auth/google':'Log in',
         }
         res.locals.name = "not logged in"
+        res.locals.loggedin = false;
     }
     next();
 };
@@ -112,7 +112,32 @@ app.set('view engine', 'jade');
 
 app.get('/', function (req, res) {
     // console.log(req.flash('error'));
-    res.render('home', { title: 'Home'})
+    get_leaderboard(function(err, leaderboard){
+        if (err){
+            console.log(err);
+            res.status(500).send("Bad!");
+            return
+        }
+        var ids = []
+        for (var i = 0; i < leaderboard.score.length; i++) {
+            ids[i] = leaderboard.score[i].id;
+        };
+        get_id_to_name_map(ids, function(map){
+            if(req.user) {
+                get_player_status(req.user.student_id_num_hashed, function(err, status){
+                    if (err){
+                        console.log(err);
+                        res.status(500).send("Bad!");
+                        return
+                    }
+                    res.render('home', {leaderboard:leaderboard, status: status, namemap:map});
+                });   
+            } else {
+                res.render('home', {leaderboard:leaderboard, namemap:map});
+            }
+        });
+        
+    });
 });
 
 app.get('/auth/google',
@@ -122,7 +147,7 @@ app.get('/auth/google/return',
     passport.authenticate('google', { failureRedirect: '/', failureFlash: true }),
     function(req, res) {
         // Successful authentication, redirect home.
-        res.redirect('/account/info');
+        res.redirect('/');
     });
 
 app.get('/logout', function(req, res){
@@ -171,7 +196,7 @@ app.post('/account/setup',
                         var content = fs.readFileSync(default_file);
                         fs.writeFileSync(aifile, content);
 
-                        res.redirect('/account/info');
+                        res.redirect('/');
                     });
                 }
             });
@@ -179,14 +204,6 @@ app.post('/account/setup',
             // Bad ID number
             res.redirect('/account/setup');
         }
-    }
-);
-
-app.get('/account/info',
-    ensureUserLoggedIn,
-    ensureUserSetUp,
-    function (req, res) {
-        res.render('acct_info')
     }
 );
 
@@ -218,24 +235,17 @@ var get_player_log = function(idnum, cb) {
     });
 }
 
-app.get('/status',
+app.get('/logs',
     ensureUserLoggedIn,
     ensureUserSetUp,
     function (req, res) {
-        get_player_status(req.user.student_id_num_hashed, function(err, status){
+        get_player_log(req.user.student_id_num_hashed, function(err, log){
             if (err){
                 console.log(err);
                 res.status(500).send("Bad!");
                 return
             }
-            get_player_log(req.user.student_id_num_hashed, function(err, log){
-                if (err){
-                    console.log(err);
-                    res.status(500).send("Bad!");
-                    return
-                }
-                res.render('status', {stats: status, log:log});
-            });
+            res.render('logs', {log:log});
         });
     }
 );
@@ -310,27 +320,6 @@ var get_id_to_name_map = function(ids, cb){
         do_find(ids[i]);
     };
 }
-
-app.get('/leaderboard',
-    ensureUserLoggedIn,
-    ensureUserSetUp,
-    function (req, res) {
-        get_leaderboard(function(err, leaderboard){
-            if (err){
-                console.log(err);
-                res.status(500).send("Bad!");
-                return
-            }
-            var ids = []
-            for (var i = 0; i < leaderboard.score.length; i++) {
-                ids[i] = leaderboard.score[i].id;
-            };
-            get_id_to_name_map(ids, function(map){
-                res.render('leaderboard', {leaderboard:leaderboard, namemap:map})
-            });
-        });
-    }
-);
 
 var server = app.listen(config.listen_port, function () {
     var host = server.address().address;
