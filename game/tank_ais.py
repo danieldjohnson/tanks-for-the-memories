@@ -1,3 +1,5 @@
+from config import *
+
 from sandbox_utils.RestrictedPython import compile_restricted
 import sandbox_utils.ZopeGuards as ZopeGuards
 import sandbox_utils.ZopeReplacements as ZopeReplacements
@@ -6,7 +8,12 @@ ZopeGuards.initialize(ZopeReplacements)
 get_safe_globals = ZopeGuards.get_safe_globals
 guarded_getattr = ZopeGuards.guarded_getattr
 
-import os, signal, copy, traceback, sys
+import os
+if not USE_SIMULATOR:
+    import signal
+import copy
+import traceback
+import sys
 from contextlib import contextmanager
 from numbers import Number
 from pprint import pprint
@@ -27,13 +34,16 @@ def _sandbox_timeout_handler(signum, frame):
 
 @contextmanager
 def sandbox_timeout(timeout):
-    oldhandler = signal.signal(signal.SIGALRM, _sandbox_timeout_handler)
-    try:
-        signal.setitimer(signal.ITIMER_REAL, timeout)
+    if USE_SIMULATOR:
         yield
-    finally:
-        signal.setitimer(signal.ITIMER_REAL, 0)
-        signal.signal(signal.SIGALRM, oldhandler)
+    else:
+        oldhandler = signal.signal(signal.SIGALRM, _sandbox_timeout_handler)
+        try:
+            signal.setitimer(signal.ITIMER_REAL, timeout)
+            yield
+        finally:
+            signal.setitimer(signal.ITIMER_REAL, 0)
+            signal.signal(signal.SIGALRM, oldhandler)
 
 class AIManager(object):
     """

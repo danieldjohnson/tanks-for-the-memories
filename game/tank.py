@@ -9,6 +9,9 @@ from constants import *
 from tank_ais import AIManager
 from bullet import Bullet
 import json
+from config import *
+if USE_SIMULATOR:
+    import js
 
 class Tank:
 
@@ -134,5 +137,8 @@ class Tank:
             'score': self.score,
             'age': self.age,
         }
-        with open(logfile, 'w') as f:
-            f.write(json.dumps(statobj))
+        if USE_SIMULATOR:
+            js.globals.handle_stat(self.ID, json.dumps(statobj))
+        else:
+            with open(logfile, 'w') as f:
+                f.write(json.dumps(statobj))

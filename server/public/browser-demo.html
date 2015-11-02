@@ -1,0 +1,74 @@
+<html>
+<head>
+	<!-- shim for ES6 `Promise` builtin -->
+<script src="pypyjs-release/lib/Promise.min.js" type="text/javascript"></script>
+<!-- shim for off-main-thread function compilation -->
+<script src="pypyjs-release/lib/FunctionPromise.js" type="text/javascript"></script>
+<script src="pypyjs-release/lib/pypyjs.js" type="text/javascript"></script>
+<script type="text/javascript">
+function get_input(){
+	// console.log("Fetching input");
+	return "";
+}
+function update_board(board){
+	//console.log("Got board", board);
+}
+function handle_stat(id, stat){
+	console.log("Got stat", id, stat);
+}
+function handle_leaderboard(leaderboard){
+	//console.log("Got leaderboard", leaderboard);
+}
+function update_board(board){
+	console.log("Got board", board);
+	var COLORS = ['rgb(100,100,200)', 'rgb(200,100,100)', 'rgb(100,200,100)', 'rgb(200,200,100)', 'rgb(200,100,200)', 'rgb(100,200,200)', 'rgb(100,60,200)', 'rgb(60,100,200)', 'rgb(200,60,100)', 'rgb(60,100,200)', 'rgb(0,0,0)', 'rgb(120, 120, 120)', 'rgb(0,0,200)', 'rgb(200,0,0)', 'rgb(0,0,0)', 'rgb(0,200,0)']
+	if(ctx){
+		ctx.clearRect(0,0,640,640);
+		for (var r = 0; r < board.length; r++) {
+			var row = board[r];
+			for (var c = 0; c < row.length; c++) {
+				var cell = row[c];
+				ctx.fillStyle = COLORS[cell];
+				ctx.fillRect(r*10+2,c*10+2,6,6);
+			};
+		};
+	}
+}
+function pydo(stuff){
+	pypyjs.eval(stuff).then(function(x){console.log(x)})
+}
+function doturn(){
+	pypyjs.eval('runner.next()').then(function(){
+		window.requestAnimationFrame(doturn);
+	})
+}
+var basictank="class TankAI:\n    def init(self,init_state):\n        pass\n    def takeTurn(self,state):\n        return [[1, 1], True, [0, 1]]"
+pypyjs.ready().then(function() {
+	// this callback is fired when the interpreter is ready for use.
+	console.log("ready!");
+	pypyjs.set("tank_path_map",JSON.stringify([
+		['ais/test_1.py',basictank],
+		['ais/doctor.py',basictank],
+		['ais/test_3.py',basictank],
+	]));
+	pypyjs.exec("import game; game.setup_simulation(tank_path_map); runner = game.turn_generator()")
+		.then(function(){
+			doturn();
+		});
+});
+var canvas, ctx;
+window.addEventListener('load',function(){
+	canvas = document.getElementById('board')
+	ctx = canvas.getContext('2d');
+})
+</script>
+<style type="text/css">
+	body {
+		background-color: black;
+	}
+</style>
+</head>
+<body>
+	<canvas id="board" width="640" height="640"></canvas>
+</body>
+</html>

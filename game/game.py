@@ -4,15 +4,12 @@
 # MuddHacks 2015
 #
 
-import curses
 import copy
 import time
 import os
-import select, sys
 import binascii
 import sys
 import random
-import select
 import hashlib
 import json
 import collections
@@ -20,7 +17,12 @@ import collections
 from constants import *
 from config import *
 if OUTPUT_LED:
+    import select
     import RPi.GPIO
+if OUTPUT_STDOUT:
+    import curses
+if USE_SIMULATOR:
+    import js
 
 from tank import Tank
 from maps import *
@@ -322,6 +324,10 @@ class Game:
                     spifile.write(bytearray(bytes_to_write[:spi_max_write_sz]))
                     bytes_to_write = bytes_to_write[spi_max_write_sz:]
 
+        # send the board to javascript
+        if USE_SIMULATOR:
+            js.globals.update_board(self.board)
+
     # ------ MISCELLANEOUS THINGS THE GAME NEEDS TO DO -------
 
     def load_test_tanks(self):
@@ -372,8 +378,11 @@ class Game:
             'survivors':survivors,
             'score':score,
         }
-        with open(leaderboardfile, 'w') as f:
-            f.write(json.dumps(leaderboard))
+        if USE_SIMULATOR:
+            js.globals.handle_leaderboard(json.dumps(leaderboard))
+        else:
+            with open(leaderboardfile, 'w') as f:
+                f.write(json.dumps(leaderboard))
 
 if OUTPUT_LED:
     def reset_fpga():
@@ -386,8 +395,7 @@ def preprocess_idnum(idnum):
     # ID numbers
     return hashlib.sha512(idnum).hexdigest()
 
-if __name__ == "__main__":
-
+def turn_generator():
     if OUTPUT_STDOUT:
         stdscr = curses.initscr()
         curses.start_color()
@@ -417,7 +425,7 @@ if __name__ == "__main__":
             if now - last_input_time > 6:
                 # If no characters have been entered for a while, clear input
                 buffered_input = ""
-            if not OUTPUT_STDOUT \
+            if OUTPUT_LED \
                   and select.select([sys.stdin],[],[],0.0) == ([sys.stdin],[],[]):
                 buffered_input += ''.join([ c for c in sys.stdin.readline()
                                             if ord(c) >= ord('0') and ord(c) <= ord('9')])
@@ -429,6 +437,8 @@ if __name__ == "__main__":
                     last_input_time = now
                     buffered_input += chr(ch)
                     ch = win.getch()
+            if USE_SIMULATOR:
+                buffered_input = js.globals.get_input()
             if len(buffered_input) >= 10:
                 # Add as tank
                 the_game.pending_tank_ids.append(preprocess_idnum(buffered_input[1:9]))
@@ -442,8 +452,25 @@ if __name__ == "__main__":
             if t_minus < 0:
                 the_game.draw_board()
                 t_minus = 0.1
+
+            yield
     finally:
         if OUTPUT_LED:
             RPi.GPIO.cleanup()
         if OUTPUT_STDOUT:
             curses.endwin()
+
+def setup_simulation(tank_path_map):
+    os.chdir('/home/web_user')
+    os.mkdir('data')
+    os.mkdir('game')
+    os.chdir('game')
+    os.mkdir('ais')
+    for path, code in json.loads(str(tank_path_map)):
+        with open(path,'w') as f:
+            f.write(code)
+
+if __name__ == "__main__":
+    runner = turn_generator()
+    for _ in runner:
+        pass
