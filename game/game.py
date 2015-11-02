@@ -395,7 +395,9 @@ def preprocess_idnum(idnum):
     # ID numbers
     return hashlib.sha512(idnum).hexdigest()
 
+win = None
 def turn_generator():
+    global win
     if OUTPUT_STDOUT:
         stdscr = curses.initscr()
         curses.start_color()
