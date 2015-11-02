@@ -26,7 +26,10 @@ for name in ['False', 'None', 'True', 'abs', 'basestring', 'bool', 'callable',
              'long', 'oct', 'ord', 'pow', 'range', 'repr', 'round',
              'str', 'tuple', 'unichr', 'unicode', 'xrange', 'zip']:
 
-    safe_builtins[name] = getattr(__builtins__,name)
+    try:
+        safe_builtins[name] = getattr(__builtins__,name)
+    except:
+        safe_builtins[name] = __builtins__[name]
 
 # Wrappers provided by this module:
 # delattr
