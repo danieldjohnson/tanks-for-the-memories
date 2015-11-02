@@ -4,6 +4,6 @@
 [submodule "game/sandbox_utils/RestrictedPython"]
 	path = game/sandbox_utils/RestrictedPython
 	url = https://github.com/zopefoundation/RestrictedPython
-[submodule "server/public/pypyjs-release"]
-	path = server/public/pypyjs-release
-	url = https://github.com/pypyjs/pypyjs-release
+[submodule "server/public/pypyjs-release-nojit"]
+	path = server/public/pypyjs-release-nojit
+	url = https://github.com/pypyjs/pypyjs-release-nojit
