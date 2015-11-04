@@ -9,6 +9,7 @@ from constants import *
 from tank_ais import AIManager
 from bullet import Bullet
 import json
+import copy
 from config import *
 if USE_SIMULATOR:
     import js
@@ -22,7 +23,7 @@ class Tank:
                        ammo  = 100000):
         self.perma_board_copy = perma_board_copy
         self.AIpath = AIpath
-        self.AI = AIManager(AIpath, perma_board_copy)
+        self.AI = AIManager(AIpath, [perma_board_copy,ID])
         self.ID    = ID
         self.x_pos = x_pos
         self.y_pos = y_pos
@@ -38,6 +39,7 @@ class Tank:
         self.damage_IDs = []
 
     def take_turn(self, tank_coords):
+
         state = [tank_coords, self.hp, self.ammo, [int(round(self.x_pos)), int(round(self.y_pos))], self.damage_IDs]
         turn_info = self.AI.takeTurn(state)
 

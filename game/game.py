@@ -12,7 +12,9 @@ import sys
 import random
 import hashlib
 import json
+import random
 import collections
+from collections import deque
 
 from constants import *
 from config import *
@@ -49,12 +51,12 @@ class Game:
         for i in range(64):
             self.ghost_board += [[EMPTY]*64]
 
-        self.scores = {}
-
-        self.board       = copy.deepcopy(self.perma_board)
-        self.tanks       = self.load_test_tanks()
-        self.bullets     = []
-        self.t_minus     = TURN_RATE
+        self.scores          = {}
+        self.load_colors()
+        self.load_test_tanks()
+        self.board           = copy.deepcopy(self.perma_board)
+        self.bullets         = []
+        self.t_minus         = TURN_RATE
         self.last_time_stamp = time.time()
 
         self.pending_tank_ids = []
@@ -84,17 +86,15 @@ class Game:
 
             # add new tanks, if necessary
             for newid in self.pending_tank_ids:
-                for i in range(len(self.tanks)):
-                    if self.tanks[i] is not None and self.tanks[i].ID == newid:
-                        self.tanks[i].reload_ai()
+                for t in self.tank.itervalues():
+                    if t.ID == newid:
+                        t.reload_ai()
                         break
                 else:
-                    # Tank wasn't found! Add it if there is an AI
-                    if not os.path.isfile("../data/"+newid+".py"):
-                        break
-                    for i in range(len(self.tanks)):
-                        if self.tanks[i] is None:
-                            # Found a space for our tank
+                    # Tank doesn't already exist! 
+                    # Add it if there is an AI and there is a color left to assign to
+                    if os.path.isfile("../data/"+newid+".py"):
+                        if len(self.color_queue) > 0:
                             try:
                                 newtank = Tank(newid,
                                               "../data/"+newid+".py",
@@ -103,28 +103,28 @@ class Game:
                                               random.randint(2,62))
                             except SandboxCodeExecutionFailed:
                                 # Couldn't create tank. Skip to next tank
-                                break
+                                pass
                             else:
-                                self.tanks[i] = newtank
+                                self.tanks[newid] = newtank
                                 self.scores[newid] = 0
                                 # Move on to next tank
-                                break
             self.pending_tank_ids = []
 
             # take the turns!
-            # if the tanks shoot, add their bullets to the bulletlist
-            tank_coords = []
-            for t in self.tanks:
-                if t:
-                    tank_coords += [[t.ID,t.x_pos,t.y_pos]]
-            for t in self.tanks:
-                if t:
-                    bullet = t.take_turn(tank_coords)
-                    if bullet:
-                        self.bullets += [bullet]
-            for t in self.tanks:
-                if t:
-                    t.update_stat_file()
+            tank_coords = {}
+            # record positions so that we can give info to the AIs
+            for t in self.tanks.itervalues():
+                tank_coords[t.ID] = [t.x_pos,t.y_pos]
+            # run each individual AI in a random order
+            random_tanks = self.tanks.values()
+            random.shuffle(random_tanks)
+            for t in random_tanks:
+                bullet = t.take_turn(tank_coords)
+                if bullet:
+                    self.bullets += [bullet]
+            # update all the appropriate stats
+            for t in self.tanks.itervalues():
+                t.update_stat_file()
 
             self.real_time_update(dt - self.t_minus)
             self.t_minus = TURN_RATE
@@ -164,12 +164,11 @@ class Game:
                 self.board[y][x] = BULLET
 
         # then tanks move
-        for i in range(len(self.tanks)):
+        for k in self.tanks.keys():
 
-            t = self.tanks[i]
+            if k:
 
-            # some of our array entries may be null
-            if t:
+                t = self.tanks[k]
 
                 t.move(dt)
 
@@ -178,7 +177,7 @@ class Game:
                 for p in positions:
                     x = p[0]
                     y = p[1]
-                    # if you hit a wall or go off the edge of the screen, don't move
+                    # if you hit a wall or go off the edge of the screen, or we hit a tank, don't move
                     if (x < 0) or (y < 0) or (x > 63) or (y > 63) or (self.board[y][x] == WALL) or (self.board[y][x] < 10):
                         t.move(-1.0*dt)
                         break
@@ -202,9 +201,10 @@ class Game:
                                 t.damage(BULLET_DM)
                                 t.damage_IDs += [bullet_id]
                                 if t.is_dead():
-                                    self.tanks[i] = None
-                                    for q in self.tanks:
-                                        if q != None and q.ID == bullet_id:
+                                    self.return_color(t)
+                                    del self.tanks[k]
+                                    for q in self.tanks.itervalues():
+                                        if q.ID == bullet_id:
                                             q.score += 1
                                             self.scores[q.ID] += 1
                                     break
@@ -214,7 +214,7 @@ class Game:
                         t.heal(HOSPITAL_RATE, dt)
                         t.recently_healed = True
                     # finally set the pixel to be a tank
-                    self.board[y][x] = i
+                    self.board[y][x] = t.color
 
                 # once the tank is done moving, reset so it can be healed next update
                 t.recently_healed = False
@@ -222,7 +222,7 @@ class Game:
                 # if t died, reset any pixels that were written before the tank died
                 if t.is_dead():
                     for p in positions:
-                        if self.board[y][x] == i:
+                        if self.board[y][x] == t.color:
                             self.board[y][x] = EMPTY
 
                 # otherwise add the "eye" of the tank to the ghost_board
@@ -292,7 +292,6 @@ class Game:
                         color = 4
                     else:
                         color = 5
-
                     win.addch(i,j,DEBUG_STRINGS[n],curses.color_pair(color))
 
         # draw the board to the LED matrix
@@ -338,7 +337,7 @@ class Game:
                       27,27)
         self.scores["penis"] = 0
         tank_2 = Tank("dickbutt",
-                      "ais/doctor.py",
+                      "ais/test_2.py",
                       copy.deepcopy(self.perma_board),
                       12,22)
         self.scores["dickbutt"] = 0
@@ -347,22 +346,43 @@ class Game:
                       copy.deepcopy(self.perma_board),
                       5,12)
         self.scores["sex"] = 0
-        doctor = Tank("doc",
+        poop   = Tank("poop",
+                      "ais/wall_hugger.py",
+                      copy.deepcopy(self.perma_board),
+                      57,49)
+        self.scores["doctor_love"] = 0
+        doctor = Tank("doctor_love",
                       "ais/doctor.py",
                       copy.deepcopy(self.perma_board),
                       5,4)
-        self.scores["doc"] = 0
-        # hugger = Tank("hug",
-        #               "ais/wall_hugger.py",
-        #               copy.deepcopy(self.perma_board),
-        #               19,10)
-        #
-        #               doctor,hugger,
-        return [tank_1,tank_2,tank_3,None,None,None,None,None,None,None,None]
+        self.scores["doctor_love"] = 0
+
+        self.tanks =  {"penis"         : tank_1,
+                       "dickbutt"      : tank_2,
+                       "sex"           : tank_3,
+                       "doctor_love"   : doctor,
+                       "poop"          : poop, }
+
+        for t in self.tanks.itervalues():
+            self.assign_color(t)
+
+    def load_colors(self):
+        """ creates a queue from the list of possible tank colors"""
+        self.color_queue = deque(range(10))
+
+    def assign_color(self,tank):
+        """ removes a color from the queue of available colors 
+            and gives it to a tank """
+        tank.color = self.color_queue.popleft()
+
+    def return_color(self,tank):
+        """ removes a color from a tank
+            and adds it back to the queue of available colors """
+        self.color_queue.append(tank.color)
 
     def save_leaderboard(self):
         leaderboardfile = "../data/leaderboard.json"
-        alive_tanks = [t for t in self.tanks if t is not None]
+        alive_tanks = self.tanks.values()
         survivors = sorted([{
                     'id':t.ID,
                     'age':t.age,

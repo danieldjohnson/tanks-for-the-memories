@@ -32,7 +32,7 @@ MAX_TANK_SPEED  = 1
 class TankAI:
 
     def init(self,init_state):
-        self.board = init_state
+        [self.board,self.ID] = init_state
         self.state = "begin"
         self.no_move  = [ 0, 0]
         self.go_north = [ 0,-1]
@@ -94,12 +94,12 @@ class TankAI:
         elif self.state == "south":
             if not E:
                 self.state = "east"
-                return self.get_return(self.go_east,tank_coords)            
+                return self.get_return(self.go_east,tank_coords,x_pos,y_pos)            
             elif not S:
                 return self.get_return(self.go_south,tank_coords,x_pos,y_pos)
             elif not W:
                 self.state = "west"
-                return self.get_return(self.go_west,tank_coords)            
+                return self.get_return(self.go_west,tank_coords,x_pos,y_pos)            
             else:
                 self.state = "north"
                 return self.get_return(self.go_north,tank_coords,x_pos,y_pos)
@@ -107,9 +107,14 @@ class TankAI:
             return self.get_return(self.no_move,tank_coords,x_pos,y_pos)
 
     def get_return(self,dir,tank_coords,x_pos,y_pos):
-        x_dir = tank_coords[0][1] - x_pos
-        y_dir = tank_coords[0][2] - y_pos
-        return [dir,True,[x_dir,y_dir]]
+        if len(tank_coords) == 1:
+            return [[0,0], False,[0,0]]
+        for k in tank_coords.keys():
+            if k != self.ID:
+                enemy_pos = tank_coords[k]
+                x_dir = enemy_pos[0] - x_pos
+                y_dir = enemy_pos[1] - y_pos
+                return [dir, True, [x_dir,y_dir]]
 
     def get_N(self,x_pos,y_pos):
         if ((self.board[y_pos-2][x_pos]==WALL) or (self.board[x_pos-1][y_pos-2]==WALL) or (self.board[y_pos-2][x_pos+1]==WALL)):

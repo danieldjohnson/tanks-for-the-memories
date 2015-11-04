@@ -146,9 +146,14 @@ class TankAI:
 
 
     def get_return(self,dir,tank_coords,x_pos,y_pos):
-        x_dir = tank_coords[0][1] - x_pos
-        y_dir = tank_coords[0][2] - y_pos
-        return [dir,True,[x_dir,y_dir]]
+        if len(tank_coords) == 1:
+            return [[0,0], False,[0,0]]
+        for k in tank_coords.keys():
+            if k != self.ID:
+                enemy_pos = tank_coords[k]
+                x_dir = enemy_pos[0] - x_pos
+                y_dir = enemy_pos[1] - y_pos
+                return [dir, True, [x_dir,y_dir]]
 
     def detect_hosp(self,x_pos,y_pos):
         x = x_pos

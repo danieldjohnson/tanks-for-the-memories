@@ -49,14 +49,14 @@ class TankAI:
         S = self.S()
 
 
-        if self.state = "begin":
+        if self.state == "begin":
             if not N:
                 return get_return(self.go_north)
             else
                 self.state = "east"
                 return get_return(self.no_move)
 
-        elif self.state = "north":
+        elif self.state == "north":
             if not W:
                 self.state = "west"
                 return get_return(self.go_west)
@@ -69,7 +69,7 @@ class TankAI:
                 self.state = "south"
                 return get_return(self.go_south)
 
-        elif self.state = "east":
+        elif self.state == "east":
             if not N:
                 self.state = "north"
                 return get_return(self.go_north)
@@ -82,7 +82,7 @@ class TankAI:
                 self.state = "west"
                 return get_return(self.go_west)
 
-        elif self.state = "west":
+        elif self.state == "west":
             if not S:
                 self.state = "south"
                 return get_return(self.go_south)
@@ -95,7 +95,7 @@ class TankAI:
                 self.state = "east"
                 return get_return(self.go_east)
 
-        elif self.state = "south":
+        elif self.state == "south":
             if not E:
                 self.state = "east"
                 return get_return(self.go_east)
