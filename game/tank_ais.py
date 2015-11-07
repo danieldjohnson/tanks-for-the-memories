@@ -14,6 +14,7 @@ if not USE_SIMULATOR:
 import copy
 import traceback
 import sys
+import datetime
 from contextlib import contextmanager
 from numbers import Number
 from pprint import pprint
@@ -26,6 +27,7 @@ import constants
 ZopeReplacements.import_mapping["constants"] = constants
 
 EXECUTION_TIMEOUT = 0.1
+MAX_LOG_SIZE = 100000
 
 class SandboxCodeExecutionFailed(Exception):
     pass
@@ -99,6 +101,12 @@ class AIManager(object):
             logfile = "../data/{}_out.log".format(self.idnum)
             with open(logfile, 'a') as f:
                 f.writelines(self.logbuffer)
+            size = os.path.getsize(logfile)
+            if size > MAX_LOG_SIZE:
+                os.remove(logfile)
+                with open(logfile, 'a') as f:
+                    f.write("...\n(truncated {})\n".format(datetime.datetime.today()))
+
         self.logbuffer = []
 
     def fix_sandbox_exception(self):

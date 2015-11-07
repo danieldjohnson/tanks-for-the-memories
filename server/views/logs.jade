@@ -3,5 +3,15 @@ extends layout
 block content
   div.container
     h2 Logs:
+    a(href="#")#clear Clear logs
     pre
-      p= log
+      p#logoutput= log
+    script.
+      $(function() {
+        $("#clear").on("click",function(e) {
+          e.preventDefault();
+          $.post("/logs/clear",function(data) {
+            $("#logoutput").html("");
+          });
+        });
+      });

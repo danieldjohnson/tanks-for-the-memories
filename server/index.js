@@ -105,6 +105,17 @@ var get_player_log = function(idnum, cb) {
     });
 }
 
+var clear_player_log = function(idnum, cb) {
+    var logfile = '../data/' + idnum + '_out.log';
+    fs.stat(logfile, function (err, stat) {
+        if (!err && stat.isFile()){
+            fs.unlink(logfile, cb);
+        } else {
+            cb(null);
+        }
+    });
+}
+
 var get_css_color = function(tankcolor) {
     var sc = 255.0/90;
     return 'rgb('+(tankcolor[0]*sc)+','+(tankcolor[1]*sc)+','+(tankcolor[2]*sc)+')';
@@ -262,6 +273,7 @@ app.post('/account/setup',
         }
     }
 );
+
 app.get('/logs',
     ensureUserLoggedIn,
     ensureUserSetUp,
@@ -273,6 +285,21 @@ app.get('/logs',
                 return
             }
             res.render('logs', {log:log});
+        });
+    }
+);
+
+app.post('/logs/clear',
+    ensureUserLoggedIn,
+    ensureUserSetUp,
+    function (req, res) {
+        clear_player_log(req.user.student_id_num_hashed, function(err){
+            if (err){
+                console.log(err);
+                res.status(500).send("Bad!");
+                return
+            }
+            res.send('OK');
         });
     }
 );
