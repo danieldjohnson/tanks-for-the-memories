@@ -53,7 +53,7 @@ class Game:
 
         self.scores          = {}
         self.load_colors()
-        self.load_test_tanks()
+        self.tanks           = {}
         self.board           = copy.deepcopy(self.perma_board)
         self.bullets         = []
         self.t_minus         = TURN_RATE
@@ -418,8 +418,11 @@ def preprocess_idnum(idnum):
     return hashlib.sha512(idnum).hexdigest()
 
 win = None
-def turn_generator():
+the_game = None
+def setup():
     global win
+    global the_game
+
     if OUTPUT_STDOUT:
         stdscr = curses.initscr()
         curses.start_color()
@@ -438,6 +441,11 @@ def turn_generator():
         reset_fpga()
 
     the_game = Game(walls_w_hosp)
+
+def turn_generator():
+    global win
+    global the_game
+
     last_time_stamp = time.time()
     t_minus = 0.1
 
@@ -484,17 +492,28 @@ def turn_generator():
         if OUTPUT_STDOUT:
             curses.endwin()
 
-def setup_simulation(tank_path_map):
+def setup_simulation():
     os.chdir('/home/web_user')
     os.mkdir('data')
     os.mkdir('game')
     os.chdir('game')
     os.mkdir('ais')
+    setup()
+
+def store_ais(tank_path_map):
     for path, code in json.loads(str(tank_path_map)):
         with open(path,'w') as f:
             f.write(code)
 
+def spawn_ai(ID):
+    the_game.pending_tank_ids.append(str(ID))
+    if os.path.isfile("../data/"+ID+".py"):
+        print "is a file!"
+    print the_game.pending_tank_ids
+
 if __name__ == "__main__":
+    setup()
+    the_game.load_test_tanks()
     runner = turn_generator()
     for _ in runner:
         pass

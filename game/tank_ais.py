@@ -96,7 +96,7 @@ class AIManager(object):
 
     def flushlog(self):
         if USE_SIMULATOR:
-            js.globals.handle_log(self.ID, json.dumps(self.logbuffer))
+            js.globals.handle_log(self.idnum, json.dumps(self.logbuffer))
         else:
             logfile = "../data/{}_out.log".format(self.idnum)
             with open(logfile, 'a') as f:

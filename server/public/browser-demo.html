@@ -23,7 +23,7 @@ function handle_leaderboard(leaderboard){
 	//console.log("Got leaderboard", leaderboard);
 }
 function update_board(board){
-	console.log("Got board", board);
+	console.log("Got board");
 	var COLORS = ['rgb(100,100,200)', 'rgb(200,100,100)', 'rgb(100,200,100)', 'rgb(200,200,100)', 'rgb(200,100,200)', 'rgb(100,200,200)', 'rgb(100,60,200)', 'rgb(60,100,200)', 'rgb(200,60,100)', 'rgb(60,100,200)', 'rgb(0,0,0)', 'rgb(120, 120, 120)', 'rgb(0,0,200)', 'rgb(200,0,0)', 'rgb(0,0,0)', 'rgb(0,200,0)']
 	if(ctx){
 		ctx.clearRect(0,0,640,640);
@@ -50,11 +50,14 @@ pypyjs.ready().then(function() {
 	// this callback is fired when the interpreter is ready for use.
 	console.log("ready!");
 	pypyjs.set("tank_path_map",JSON.stringify([
-		['ais/test_1.py',basictank],
-		['ais/doctor.py',basictank],
-		['ais/test_3.py',basictank],
+		['../data/test_1.py',basictank],
+		['../data/doctor.py',basictank],
+		['../data/test_3.py',basictank],
 	]));
-	pypyjs.exec("import game; game.setup_simulation(tank_path_map); runner = game.turn_generator()")
+	pypyjs.exec("import game; game.setup_simulation();" + 
+				"game.store_ais(tank_path_map);" +
+				"game.spawn_ai('test_1');" +
+				"runner = game.turn_generator()")
 		.then(function(){
 			doturn();
 		});
