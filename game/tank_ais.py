@@ -18,6 +18,10 @@ from contextlib import contextmanager
 from numbers import Number
 from pprint import pprint
 
+from config import *
+if USE_SIMULATOR:
+    import js, json
+
 import constants
 ZopeReplacements.import_mapping["constants"] = constants
 
@@ -89,9 +93,12 @@ class AIManager(object):
             print string,
 
     def flushlog(self):
-        logfile = "../data/{}_out.log".format(self.idnum)
-        with open(logfile, 'a') as f:
-            f.writelines(self.logbuffer)
+        if USE_SIMULATOR:
+            js.globals.handle_log(self.ID, json.dumps(self.logbuffer))
+        else:
+            logfile = "../data/{}_out.log".format(self.idnum)
+            with open(logfile, 'a') as f:
+                f.writelines(self.logbuffer)
         self.logbuffer = []
 
     def fix_sandbox_exception(self):

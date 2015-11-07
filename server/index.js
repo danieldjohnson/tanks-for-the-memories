@@ -76,8 +76,43 @@ var ensureUserNotSetUp = function (req, res, next) {
     }
 };
 
+
+var get_player_status = function(idnum, cb) {
+    var statusfile = '../data/' + idnum + '_stat.json';
+    fs.stat(statusfile, function (err, stat) {
+        if (!err && stat.isFile()){
+            fs.readFile(statusfile, function(err, data) {
+                if(err) {
+                    cb(err, null);
+                } else {
+                    cb(null, JSON.parse(data));
+                }
+            });
+        } else {
+            cb(null, null);
+        }
+    });
+}
+
+var get_player_log = function(idnum, cb) {
+    var logfile = '../data/' + idnum + '_out.log';
+    fs.stat(logfile, function (err, stat) {
+        if (!err && stat.isFile()){
+            fs.readFile(logfile, cb);
+        } else {
+            cb(null, "No log to show.");
+        }
+    });
+}
+
+var get_css_color = function(tankcolor) {
+    var sc = 255.0/90;
+    return 'rgb('+(tankcolor[0]*sc)+','+(tankcolor[1]*sc)+','+(tankcolor[2]*sc)+')';
+}
+
 var prepareRender = function (req, res, next) {
     res.locals.errmessages = req.flash('error');
+    res.locals.get_css_color = get_css_color;
     if(req.user){
         res.locals.navbar = {
             '/':'Home',
@@ -86,6 +121,21 @@ var prepareRender = function (req, res, next) {
         }
         res.locals.name = req.user.name;
         res.locals.loggedin = true;
+        get_player_status(req.user.student_id_num_hashed, function(err, status){
+            if (err) {
+                console.log(err);
+                res.locals.status = null;
+                res.locals.tank_color = "#aaa";
+            } else {
+                res.locals.status = status;
+                if(status == null || !status.alive) {
+                    res.locals.tank_color = "#aaa";
+                } else {
+                    res.locals.tank_color = get_css_color(status.color);
+                }
+            }
+            next();
+        });
     } else {
         res.locals.navbar = {
             '/':'Home',
@@ -93,8 +143,10 @@ var prepareRender = function (req, res, next) {
         }
         res.locals.name = "not logged in"
         res.locals.loggedin = false;
+        res.locals.status = null;
+        res.locals.tank_color = "#aaa";
+        next();
     }
-    next();
 };
 
 
@@ -118,9 +170,13 @@ app.get('/', function (req, res) {
             res.status(500).send("Bad!");
             return
         }
-        var ids = []
+        var ids = [];
         for (var i = 0; i < leaderboard.score.length; i++) {
             ids[i] = leaderboard.score[i].id;
+            leaderboard.score[i].css_color = get_css_color(leaderboard.score[i].color);
+        };
+        for (var i = 0; i < leaderboard.survivors.length; i++) {
+            leaderboard.survivors[i].css_color = get_css_color(leaderboard.survivors[i].color);
         };
         get_id_to_name_map(ids, function(map){
             if(req.user) {
@@ -206,35 +262,6 @@ app.post('/account/setup',
         }
     }
 );
-
-var get_player_status = function(idnum, cb) {
-    var statusfile = '../data/' + idnum + '_stat.json';
-    fs.stat(statusfile, function (err, stat) {
-        if (!err && stat.isFile()){
-            fs.readFile(statusfile, function(err, data) {
-                if(err) {
-                    cb(err, null);
-                } else {
-                    cb(null, JSON.parse(data));
-                }
-            });
-        } else {
-            cb(null, null);
-        }
-    });
-}
-
-var get_player_log = function(idnum, cb) {
-    var logfile = '../data/' + idnum + '_out.log';
-    fs.stat(logfile, function (err, stat) {
-        if (!err && stat.isFile()){
-            fs.readFile(logfile, cb);
-        } else {
-            cb(null, "No log to show.");
-        }
-    });
-}
-
 app.get('/logs',
     ensureUserLoggedIn,
     ensureUserSetUp,

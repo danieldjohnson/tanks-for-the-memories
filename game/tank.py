@@ -129,6 +129,9 @@ class Tank:
         else:
             self.AI = newai
 
+    def cleanup(self):
+        self.update_stat_file()
+
     def update_stat_file(self):
         """ updates the status file, which is shown in the web portal """
         logfile = "../data/{}_stat.json".format(self.ID)
@@ -138,6 +141,8 @@ class Tank:
             'ammo': self.ammo,
             'score': self.score,
             'age': self.age,
+            'alive': not self.is_dead(),
+            'color': TANK_COLORS[self.color],
         }
         if USE_SIMULATOR:
             js.globals.handle_stat(self.ID, json.dumps(statobj))

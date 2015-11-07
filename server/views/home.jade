@@ -8,7 +8,7 @@ mixin scoreboard(source)
       div.media
         .media-left.media-middle
           .media-object
-            +logo(50,'rgb('+place.color[0]+','+place.color[1]+','+place.color[2]+')','#fff')
+            +logo(50,place.css_color,'#fff')
         .media-body
           div(style="padding:20px 0;")
             h4.media-heading= i+'. '+namemap[place.id]
@@ -30,7 +30,7 @@ block content
         if status != undefined
           div(style="position:relative;")
             div(style="position:absolute;top:15px;left:20px;")
-              +logo(70,'#aaa','white')
+              +logo(70,tank_color,'white')
             div(style="height:100px; margin-left:130px;")
               div Health: !{status.hp.toFixed(2)} / !{status.max_hp}
               div.progress

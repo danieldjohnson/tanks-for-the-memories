@@ -86,7 +86,7 @@ class Game:
 
             # add new tanks, if necessary
             for newid in self.pending_tank_ids:
-                for t in self.tank.itervalues():
+                for t in self.tanks.itervalues():
                     if t.ID == newid:
                         t.reload_ai()
                         break
@@ -105,6 +105,7 @@ class Game:
                                 # Couldn't create tank. Skip to next tank
                                 pass
                             else:
+                                self.assign_color(newtank)
                                 self.tanks[newid] = newtank
                                 self.scores[newid] = 0
                                 # Move on to next tank
@@ -202,6 +203,7 @@ class Game:
                                 t.damage_IDs += [bullet_id]
                                 if t.is_dead():
                                     self.return_color(t)
+                                    t.cleanup()
                                     del self.tanks[k]
                                     for q in self.tanks.itervalues():
                                         if q.ID == bullet_id:
@@ -350,7 +352,7 @@ class Game:
                       "ais/wall_hugger.py",
                       copy.deepcopy(self.perma_board),
                       57,49)
-        self.scores["doctor_love"] = 0
+        self.scores["poop"] = 0
         doctor = Tank("doctor_love",
                       "ais/doctor.py",
                       copy.deepcopy(self.perma_board),
@@ -386,13 +388,14 @@ class Game:
         survivors = sorted([{
                     'id':t.ID,
                     'age':t.age,
-                    'color':TANK_COLORS[i],
-                } for i,t in enumerate(alive_tanks)], key=lambda l: l['age'], reverse=True)
+                    'color':TANK_COLORS[t.color],
+                } for t in alive_tanks], key=lambda l: l['age'], reverse=True)
         score = sorted([{
                     'id':ID,
                     'score':score,
                     'msg':'Score: {}'.format(score),
-                    'color':(100,100,100),
+                    'color':(TANK_COLORS[self.tanks[ID].color]
+                        if ID in self.tanks.keys() else (30,30,30)),
                 } for ID,score in self.scores.iteritems()], key=lambda l: l['score'], reverse=True)
         leaderboard = {
             'survivors':survivors,
