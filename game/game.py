@@ -201,14 +201,13 @@ class Game:
                                 self.bullets.remove(b)
                                 t.damage(BULLET_DM)
                                 t.damage_IDs += [bullet_id]
+                                if bullet_id in self.tanks:
+                                    self.tanks[bullet_id].score += 1
+                                    self.scores[bullet_id] += 1
                                 if t.is_dead():
                                     self.return_color(t)
                                     t.cleanup()
                                     del self.tanks[k]
-                                    for q in self.tanks.itervalues():
-                                        if q.ID == bullet_id:
-                                            q.score += 1
-                                            self.scores[q.ID] += 1
                                     break
 
                     # if you're on the hospital, heal yourself
