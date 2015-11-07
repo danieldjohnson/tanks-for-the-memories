@@ -469,8 +469,6 @@ def turn_generator():
                     last_input_time = now
                     buffered_input += chr(ch)
                     ch = win.getch()
-            if USE_SIMULATOR:
-                buffered_input = js.globals.get_input()
             if len(buffered_input) >= 10:
                 # Add as tank
                 the_game.pending_tank_ids.append(preprocess_idnum(buffered_input[1:9]))
@@ -501,9 +499,9 @@ def setup_simulation():
     setup()
 
 def store_ais(tank_path_map):
-    for path, code in json.loads(str(tank_path_map)):
+    for path, code in tank_path_map.iteritems():
         with open(path,'w') as f:
-            f.write(code)
+            f.write(str(code))
 
 def spawn_ai(ID):
     the_game.pending_tank_ids.append(str(ID))

@@ -129,6 +129,7 @@ var prepareRender = function (req, res, next) {
             '/':'Home',
             '/logs':'View Logs',
             '/edit':'Edit Code',
+            '/sim':'Simulator',
         }
         res.locals.name = req.user.name;
         res.locals.loggedin = true;
@@ -332,6 +333,28 @@ app.post('/edit',
         child_process.execFile('python',['../game/test-compile.py', aifile],{},function(err,stdout,stderr){
             if (err) throw err;
             res.send(stdout);
+        });
+    }
+);
+
+app.get('/sim',
+    ensureUserLoggedIn,
+    ensureUserSetUp,
+    function (req, res) {
+        get_aifile_contents(req.user.student_id_num_hashed, function(err, usercode){
+            if (err){
+                console.log(err);
+                res.status(500).send("Bad!");
+                return
+            }
+            get_aifile_contents('../game/ais/wall_hugger', function(err, enemycode){
+                if (err){
+                    console.log(err);
+                    res.status(500).send("Bad!");
+                    return
+                }
+                res.render('sim', {usercode: usercode, enemycode: enemycode});
+            });
         });
     }
 );
