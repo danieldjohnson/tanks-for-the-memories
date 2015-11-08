@@ -1,3 +1,11 @@
+var get_css_color = function(tankcolor) {
+    var sc = 255.0/90;
+    return 'rgb('+(tankcolor[0]*sc)+','+(tankcolor[1]*sc)+','+(tankcolor[2]*sc)+')';
+}
+
+var running = false;
+var stop_on_turn = false;
+
 function handle_stat(id, stat_json){
 	st = JSON.parse(stat_json);
 	if(id != 'user') return;
@@ -5,6 +13,19 @@ function handle_stat(id, stat_json){
 	$('#health_bar_status').css('width',(100*st.hp/st.max_hp).toFixed(2)+'%');
 	$('#ammo_status').text(st.ammo);
 	$('#score_status').text(st.ammo);
+	if(st.alive){
+		$('#statusbox .bcell').css('fill', get_css_color(st.color));
+		$('#respawn').addClass('disabled');
+	} else {
+		$('#statusbox .bcell').css('fill', '#aaa')
+		$('#respawn').removeClass('disabled');
+	}
+	if(stop_on_turn){
+		running = false;
+		$('#pause').addClass('disabled');
+		$('#step').removeClass('disabled');
+		$('#run').removeClass('disabled');
+	}
 }
 function handle_log(id, logs){
 	log_list = JSON.parse(String(logs));
@@ -34,8 +55,7 @@ function update_board(board){
 }
 
 var command_queue = [];
-function doturn(){
-	// console.log("turn!");
+function clearQueue(){
 	res = Promise.resolve(true);
 	for (var i = 0; i < command_queue.length; i++) {
 		function closure_run(cmd){
@@ -47,15 +67,42 @@ function doturn(){
 		res = closure_run(command_queue[i]);
 	};
 	command_queue = [];
-	return res.then(function(){
-		pypyjs.exec('runner.next()');
+	return res;
+}
+
+function doturn(){
+	return clearQueue().then(function(){
+		return pypyjs.exec('runner.next()');
 	});
 }
+
 function doturn_cts(){
 	doturn().then(function(){
-		window.requestAnimationFrame(doturn_cts);
+		if(running)
+			window.requestAnimationFrame(doturn_cts);
+		else
+			force_drawboard();
 	})
 }
+
+function start_doturn_cts(step){
+	if(running) return;
+	stop_on_turn = step;
+	running = true;
+	pypyjs.exec('game.fix_time_after_pause()').then(function(){
+		doturn_cts();
+	})
+}
+function stop_doturn_cts(){
+	running = false;
+}
+
+function force_drawboard(){
+	return clearQueue().then(function(){
+		return pypyjs.exec('game.force_draw()');
+	})
+}
+
 var basictank="class TankAI:\n    def init(self,init_state):\n        pass\n    def takeTurn(self,state):\n        print \"hi\"\n        return [[1, 1], True, [0, 1]]"
 pypyjs.ready().then(function() {
 	// this callback is fired when the interpreter is ready for use.
@@ -69,7 +116,9 @@ pypyjs.ready().then(function() {
 		.then(function(){
 			enemy_ct = 0;
 			$("#loading").hide();
-			doturn_cts();
+			force_drawboard();
+			$('#pause').removeClass('disabled');
+			start_doturn_cts(false);
 		});
 });
 var canvas, ctx, enemy_ct;
@@ -83,8 +132,45 @@ $(function(){
 			"game.spawn_ai('"+ enemy_id +"');");
 		enemy_ct++;
 	});
+	$('#respawn').click(function(){
+		command_queue.push("game.spawn_ai('user');");
+	});
 
 	$('#clear').click(function(){
 		$('#logoutput').empty();
+	});
+
+	$('#run').click(function(){
+		if($('#run').hasClass('disabled')) return;
+		start_doturn_cts(false);
+		$('#run').addClass('disabled');
+		$('#step').addClass('disabled');
+		$('#pause').removeClass('disabled');
+	});
+	$('#pause').click(function(){
+		if($('#pause').hasClass('disabled')) return;
+		stop_doturn_cts();
+		$('#pause').addClass('disabled');
+		$('#step').removeClass('disabled');
+		$('#run').removeClass('disabled');
+	});
+	$('#step').click(function(){
+		if($('#step').hasClass('disabled')) return;
+		start_doturn_cts(true);
+		$('#step').addClass('disabled');
+		$('#run').addClass('disabled');
+		$('#pause').addClass('disabled');
+	});
+	$('#ffwdspeed').click(function(){
+		if($('#ffwdspeed').hasClass('disabled')) return;
+		command_queue.push("game.the_game.fast_forward = True;");
+		$('#ffwdspeed').addClass('disabled');
+		$('#normspeed').removeClass('disabled');
+	});
+	$('#normspeed').click(function(){
+		if($('#normspeed').hasClass('disabled')) return;
+		command_queue.push("game.the_game.fast_forward = False;");
+		$('#normspeed').addClass('disabled');
+		$('#ffwdspeed').removeClass('disabled');
 	});
 })

@@ -1,17 +1,17 @@
-mixin svg_rect(x,y,color)
-  rect(x=x y=y height=10 width=10 style={fill:color, stroke:"none"})
+mixin svg_rect(x,y,color,cls)
+  rect(x=x y=y height=10 width=10 style={fill:color, stroke:"none"} class=cls)
 
 mixin logo(size,bcol,hcol)
   svg(viewBox="0 0 40 40" width=size)
-    +svg_rect(0, 0, bcol)
-    +svg_rect(15, 0, hcol)
-    +svg_rect(30, 0, bcol)
-    +svg_rect(0, 15, bcol)
-    +svg_rect(15, 15, bcol)
-    +svg_rect(30, 15, bcol)
-    +svg_rect(0, 30, bcol)
-    +svg_rect(15, 30, bcol)
-    +svg_rect(30, 30, bcol)
+    +svg_rect(0, 0, bcol, "bcell")
+    +svg_rect(15, 0, hcol, "hcell")
+    +svg_rect(30, 0, bcol, "bcell")
+    +svg_rect(0, 15, bcol, "bcell")
+    +svg_rect(15, 15, bcol, "bcell")
+    +svg_rect(30, 15, bcol, "bcell")
+    +svg_rect(0, 30, bcol, "bcell")
+    +svg_rect(15, 30, bcol, "bcell")
+    +svg_rect(30, 30, bcol, "bcell")
 
 doctype html
 html

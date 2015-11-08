@@ -58,6 +58,7 @@ class Game:
         self.bullets         = []
         self.t_minus         = TURN_RATE
         self.last_time_stamp = time.time()
+        self.fast_forward    = False
 
         self.pending_tank_ids = []
 
@@ -71,6 +72,9 @@ class Game:
         new_time = time.time()
         dt = new_time - self.last_time_stamp
         self.last_time_stamp = new_time
+
+        if dt > MAX_DT_PER_UPDATE or self.fast_forward:
+            dt = MAX_DT_PER_UPDATE
 
 
         # if we haven't reached the next turn, just update everything
@@ -508,6 +512,13 @@ def spawn_ai(ID):
     if os.path.isfile("../data/"+ID+".py"):
         print "is a file!"
     print the_game.pending_tank_ids
+
+def force_draw():
+    the_game.draw_board()
+
+def fix_time_after_pause():
+    # Fix the timestamp, since we've been paused
+    the_game.last_time_stamp = time.time()
 
 if __name__ == "__main__":
     setup()

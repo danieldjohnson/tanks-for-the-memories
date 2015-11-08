@@ -38,6 +38,7 @@ BULLET_DM       = 1
 BULLET_SPEED    = 5   # <-- pixels/second
 HOSPITAL_RATE   = 0.1  # <-- hp/second
 TURN_RATE       = 1    # <-- turns/second
+MAX_DT_PER_UPDATE = 0.2
 
 DEBUG_STRINGS   = ["@","@","@","@","@","@","@","@","@","@"," ","#","H","*","A","o"]
 

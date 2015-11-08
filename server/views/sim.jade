@@ -10,33 +10,40 @@ block content
         | Loading... (it takes a while, be patient!)
     div.btn-toolbar
       div.btn-group
-        button.btn.btn-success#run
+        button.btn.btn-success.disabled#run
           | Run
           span.glyphicon.glyphicon-play
         button.btn.btn-success.disabled#pause
           | Pause
           span.glyphicon.glyphicon-pause
-        button.btn.btn-success#step
+        button.btn.btn-success.disabled#step
           | Step
           span.glyphicon.glyphicon-step-forward
+      div.btn-group
+        button.btn.btn-info.disabled#normspeed
+          | Normal
+        button.btn.btn-info#ffwdspeed
+          | Fast-Forward 
+          span.glyphicon.glyphicon-fast-forward
+      button.btn.btn-primary.disabled#respawn Respawn
       button.btn.btn-primary#spawn Spawn enemy
       button.btn.btn-primary#clear Clear log
 
     div.well(style="background-color:#3e3f3a; color:#fff; margin-top:50px;")
-      div(style="position:relative;")
+      div(style="position:relative;")#statusbox
         div(style="position:absolute;top:15px;left:20px;")
-          +logo(70,'rgb(85,85,255)','white')
+          +logo(70,'#aaa','white')
         div(style="height:100px; margin-left:130px;")
           div
-            | Health:
+            | Health: 
             span#health_status  Loading...
           div.progress
             div.progress-bar.progress-bar-success.progress-bar-striped(style={width:'100%'})#health_bar_status
           div
-            | Ammo:
+            | Ammo: 
             span#ammo_status  Loading...
           div
-            | Score:
+            | Score: 
             span#score_status  Loading...
 
     h2 Logs:
