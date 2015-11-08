@@ -15,6 +15,7 @@ import json
 import random
 import collections
 from collections import deque
+import numpy as np
 
 from constants import *
 from config import *
@@ -43,6 +44,12 @@ class Game:
         if len(self.perma_board) == 0:
             for i in range(64):
                 self.perma_board += [[EMPTY]*64]
+
+        # the set of locations on the board where tanks can spawn
+        # excludes HOSPITAL and WALL and anything adjacent to either
+        # formatted as a 64x64 2D list of pixel values
+        self.available_spawn_locs = [space for space in np.nindex(64,64)]
+        self.available_spawn_locs = filter(lambda x: true_for_each(lambda y: self.perma_board[y[0],y[1]] == EMPTY, Tank.three_by_three(x)), self.available_spawn_locs)
 
         # purely aesthetic features which never interact
         # includes EYE for instance
@@ -100,11 +107,11 @@ class Game:
                     if os.path.isfile("../data/"+newid+".py"):
                         if len(self.color_queue) > 0:
                             try:
+                                (x,y) = get_rand_spawn_space()
                                 newtank = Tank(newid,
                                               "../data/"+newid+".py",
                                               copy.deepcopy(self.perma_board),
-                                              random.randint(2,62),
-                                              random.randint(2,62))
+                                              x,y)
                             except SandboxCodeExecutionFailed:
                                 # Couldn't create tank. Skip to next tank
                                 pass
@@ -333,6 +340,31 @@ class Game:
             js.globals.update_board(self.board)
 
     # ------ MISCELLANEOUS THINGS THE GAME NEEDS TO DO -------
+
+    def true_for_each(func, list):
+        for e in list:
+            if not func e:
+                return False
+
+        return True
+
+    def get_rand_spawn_space(self):
+
+        (x,y) = (0,0)
+        new_tank = None
+        new_pixels = None
+        for i in range(100):
+            should_break = True
+            (x,y) = random.choice(self.available_spawn_locs)
+            new_pixels = Tank.three_by_three((x,y))
+            for t in self.tanks:
+                if len(filter(lambda x: x in new_pixels, t.get_pixel_pos())) > 0:
+                    should_break = False
+                    break
+            if should_break:
+                break
+        return (x,y)
+
 
     def load_test_tanks(self):
 

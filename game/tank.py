@@ -91,6 +91,21 @@ class Tank:
         y = round(self.y_pos)
         return [int(x),int(y)]
 
+    @staticmethod
+    def three_by_three(x,y):
+
+        zeroth  = [x-1 , y-1 ]
+        first   = [x   , y-1 ]
+        second  = [x+1 , y-1 ]
+        third   = [x-1 , y   ]
+        fourth  = [x   , y   ]
+        fifth   = [x+1 , y   ]
+        sixth   = [x-1 , y+1 ]
+        seventh = [x   , y+1 ]
+        eighth  = [x+1 , y+1 ]
+
+        return [zeroth, first, second, third, fourth, fifth, sixth, seventh, eighth]
+
     def get_pixel_pos(self):
         """ returns a list of points in the order
 
@@ -107,18 +122,7 @@ class Tank:
 
         c = self.get_center()
 
-        zeroth  = [c[0]-1 , c[1]-1 ]
-        first   = [c[0]   , c[1]-1 ]
-        second  = [c[0]+1 , c[1]-1 ]
-        third   = [c[0]-1 , c[1]   ]
-        fourth  = [c[0]   , c[1]   ]
-        fifth   = [c[0]+1 , c[1]   ]
-        sixth   = [c[0]-1 , c[1]+1 ]
-        seventh = [c[0]   , c[1]+1 ]
-        eighth  = [c[0]+1 , c[1]+1 ]
-
-
-        return [zeroth, first, second, third, fourth, fifth, sixth, seventh, eighth]
+        return Tank.three_by_three(c[0],c[1])
 
     def reload_ai(self):
         try:
