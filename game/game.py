@@ -30,6 +30,7 @@ if USE_SIMULATOR:
 from tank import Tank
 from maps import *
 from tank_ais import SandboxCodeExecutionFailed
+from server_comm import ServerCommunicator
 
 class Game:
 
@@ -68,6 +69,8 @@ class Game:
         self.fast_forward    = False
 
         self.pending_tank_ids = []
+
+        self.scomm = ServerCommunicator()
 
 
     # ------ FUNCTIONS TO UPDATE THE GAME -------
@@ -216,6 +219,7 @@ class Game:
                                     self.tanks[bullet_id].score += 1
                                     self.scores[bullet_id] += 1
                                 if t.is_dead():
+                                    self.scomm.death_event(b.ID, t.ID)
                                     self.return_color(t)
                                     t.cleanup()
                                     del self.tanks[k]

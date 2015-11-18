@@ -8,6 +8,7 @@ var fs = require('fs');
 var child_process = require('child_process');
 var Datastore = require('nedb');
 var crypto = require('crypto');
+var zmq = require('zmq');
 
 var credentials = require('./credentials');
 var config = require('./config');
@@ -403,4 +404,17 @@ var server = app.listen(config.listen_port, function () {
     var port = server.address().port;
 
     console.log('Example app listening at http://%s:%s', host, port);
+});
+
+sock = zmq.socket('rep');
+sock.on('message', function(a){
+    evt = JSON.parse(a.toString());
+    if(evt[0] == "death"){
+        console.log(evt[1],'killed',evt[2]);
+    }
+    sock.send("OK");
+});
+
+sock.bind('tcp://*:' + config.zmq_port, function(){
+    console.log('Responder bound to port ' + config.zmq_port);
 });
